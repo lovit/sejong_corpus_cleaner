@@ -60,7 +60,7 @@ def load_spoken_text_as_sentences(filepath, encoding='utf-16', header=None):
 
     return sentences
 
-def sentence_to_morphemes(sent):
+def _sentence_to_morphemes(sent):
     words = [
         word.strip() for eojeol in sent.split('\n')
              for word in eojeol.split('\t')[-1].split('+')
@@ -69,7 +69,7 @@ def sentence_to_morphemes(sent):
     words = [word if word[0] != '/' else '+'+word for word in words if word]
     return ' '.join(words)
 
-def to_morphemes_sentences(paths, is_spoken=True):
+def load_as_morphemes_sentences(paths, is_spoken=True):
     if is_spoken:
         loader = load_spoken_text_as_sentences
     else:
@@ -78,12 +78,12 @@ def to_morphemes_sentences(paths, is_spoken=True):
     sentences_ = []
     for path in paths:
         sentences = loader(path)
-        sentences = [sentence_to_morphemes(sent) for sent in sentences]
+        sentences = [_sentence_to_morphemes(sent) for sent in sentences]
         sentences_ += sentences
 
     return sentences_
 
-def to_eojeol_table(paths, is_spoken=True, return_as_dict=False):
+def load_as_eojeol_table(paths, is_spoken=True, return_as_dict=False):
     if is_spoken:
         loader = load_spoken_text_as_sentences
     else:
