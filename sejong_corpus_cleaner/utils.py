@@ -44,3 +44,26 @@ def load_spoken_text_as_sentences(filepath, encoding='utf-8', header=None):
     sentences = [sent for sent in sentences if sent]
 
     return sentences
+
+def sentence_to_pos(sent):
+    words = [
+        word.strip() for eojeol in sent.split('\n')
+             for word in eojeol.split('\t')[-1].split('+')
+    ]
+    # because spoken & written text have different word separate (' + ' and '+')
+    words = [word if word[0] != '/' else '+'+word for word in words if word]
+    return ' '.join(words)
+
+def to_pos_sentences(paths, is_spoken=True):
+    if is_spoken:
+        loader = load_spoken_text_as_sentences
+    else:
+        loader = load_written_text_as_sentences
+
+    sentences_ = []
+    for path in paths:
+        sentences = loader(path)
+        sentences = [sentence_to_pos(sent) for sent in sentences]
+        sentences_ += sentences
+
+    return sentences_
