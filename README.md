@@ -48,6 +48,17 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
     디자이너로	디자이너/NNG + 로/JKB
     나섰다.	나서/VV + 었/EP + 다/EF + ./SF
 
+**load_texts_as_sentences** 함수는 여러 파일을 읽어 list of str 형식의 하나의 sentences 를 return 합니다. 문어와 구어에 따라 is_spoken 을 True, False 로 설정합니다.
+
+    from glob import glob
+    from sejong_corpus_cleaner import load_texts_as_sentences
+
+    paths = glob('../data/raw/spoken/*.txt')
+    spoken_sentences = load_texts_as_sentences(paths, is_spoken=True)
+
+    paths = glob('../data/raw/written/*.txt')
+    written_sentences = load_texts_as_sentences(paths, is_spoken=False)
+
 ### 세종말뭉치의 품사 체계를 이용하는 형태소 분석용 데이터셋 만들기
 
 **to_morphemes_sentences** 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.

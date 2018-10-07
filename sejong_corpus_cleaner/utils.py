@@ -9,6 +9,18 @@ def check_encoding(list_of_paths):
         for path in list_of_paths]
     return list_of_encodings
 
+def load_texts_as_sentences(filepaths, encoding='utf-16', is_spoken=True):
+
+    if is_spoken:
+        loader = load_spoken_text_as_sentences
+    else:
+        loader = load_written_text_as_sentences
+
+    sentences = []
+    for path in filepaths:
+        sentences += loader(path, encoding)
+    return sentences
+
 def load_written_text_as_sentences(filepath, encoding='utf-16', header=None):
 
     if not header:
