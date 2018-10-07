@@ -44,5 +44,20 @@ tagmap = {
  'XSV': 'Verb' # 당하, 시키
  }
 
+tagset = {
+ 'Adjective': '형용사',
+ 'Adverb': '동사',
+ 'Determiner': '관형사',
+ 'Eomi': '어미',
+ 'Exclamation': '감탄사',
+ 'Josa': '조사',
+ 'Noun': '명사',
+ 'Number': '수사',
+ 'Pronoun': '대여사',
+ 'Symbol': '기호',
+ 'Unk': '인식불가',
+ 'Verb': '동사'
+}
+
 def simplify_tag(tag):
     return tagmap.get(tag, 'Unk')

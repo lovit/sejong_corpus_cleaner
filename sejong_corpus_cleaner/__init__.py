@@ -9,4 +9,5 @@ from .utils import Corpus
 from .statistics import count_tags
 from .statistics import count_tag_words
 from .simplify import tagmap
+from .simplify import tagset
 from .simplify import simplify_tag
