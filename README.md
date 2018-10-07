@@ -6,7 +6,7 @@
 
 ### Check encoding
 
-세종말뭉치의 파일 인코딩은 utf-16 입니다. 파일의 인코딩을 확인하기 위하여 check_encoding 를 이용할 수 있습니다. check_encoding 에는 list of str 형식의 파일 주소들을 입력합니다. 각 파일의 encoding 이 return 됩니다. Ubuntu OS 의 terminal command 인 file 함수를 이용합니다. Window OS 를 지원하지 않습니다.
+세종말뭉치의 파일 인코딩은 utf-16 입니다. 파일의 인코딩을 확인하기 위하여 **check_encoding** 를 이용할 수 있습니다. check_encoding 에는 list of str 형식의 파일 주소들을 입력합니다. 각 파일의 encoding 이 return 됩니다. Ubuntu OS 의 terminal command 인 file 함수를 이용합니다. Window OS 를 지원하지 않습니다.
 
     check_encoding([
         '../data/raw/spoken/5CT_0013.txt',
@@ -18,7 +18,7 @@
 
 ### Loading as sentences
 
-세종말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. load_spoken_text_as_sentences 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, load_written_text_as_sentences 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
+세종말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. **load_spoken_text_as_sentences** 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, **load_written_text_as_sentences** 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
 
     from sejong_corpus_cleaner import load_spoken_text_as_sentences
     from sejong_corpus_cleaner import load_written_text_as_sentences
@@ -50,7 +50,7 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
 
 ### 세종말뭉치의 품사 체계를 이용하는 형태소 분석용 데이터셋 만들기
 
-to_morphemes_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.
+**to_morphemes_sentences** 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.
 
     from sejong_corpus_cleaner import to_morphemes_sentences
 
@@ -73,7 +73,7 @@ to_morphemes_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를
      ...
     ]
 
-to_eojeol_table 함수는 세종말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_spoken 을 다르게 설정해야 합니다.
+**to_eojeol_table** 함수는 세종말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_spoken 을 다르게 설정해야 합니다.
 
     from sejong_corpus_cleaner import  to_eojeol_table
     paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
