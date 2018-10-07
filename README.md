@@ -75,4 +75,5 @@ to_pos_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄�
 
 ## Requirements
 
-BeautifulSoup >= 4.6.0
+- BeautifulSoup >= 4.6.0
+- pandas >= 0.23.4
