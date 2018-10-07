@@ -35,7 +35,9 @@ def load_written_text_as_sentences(filepath, encoding='utf-16', header=None):
     sentences = [sent for sent in sentences if sent[:len(header)] == header]
 
     def remove_header(sent):
-        return '\n'.join(eojeol.split('\t', 1)[-1] for eojeol in sent.split('\n'))
+        sent_ = [eojeol.split('\t', 1)[-1].strip() for eojeol in sent.split('\n') if eojeol.count('\t') == 2]
+        sent_ = [eojeol for eojeol in sent_ if eojeol]
+        return '\n'.join(sent_)
 
     sentences = [remove_header(sent).strip() for sent in sentences]
     sentences = [sent for sent in sentences if sent]
