@@ -9,12 +9,12 @@ def check_encoding(list_of_paths):
         for path in list_of_paths]
     return list_of_encodings
 
-def load_written_text_as_sentences(filepath, encoding='utf-8', header=None):
+def load_written_text_as_sentences(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
 
-    with open(filepath, encoding='utf-16') as f:
+    with open(filepath, encoding=encoding) as f:
         text = f.read()
     soup = BeautifulSoup(text, 'lxml')
 
@@ -30,12 +30,12 @@ def load_written_text_as_sentences(filepath, encoding='utf-8', header=None):
 
     return sentences
 
-def load_spoken_text_as_sentences(filepath, encoding='utf-8', header=None):
+def load_spoken_text_as_sentences(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
 
-    with open(filepath, encoding='utf-16') as f:
+    with open(filepath, encoding=encoding) as f:
         text = f.read()
     soup = BeautifulSoup(text, 'lxml')
 
