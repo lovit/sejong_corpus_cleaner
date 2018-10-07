@@ -73,6 +73,21 @@ to_morphemes_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를
      ...
     ]
 
+to_eojeol_table 함수는 세종말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_spoken 을 다르게 설정해야 합니다.
+
+    from sejong_corpus_cleaner import  to_eojeol_table
+    paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
+    table = to_eojeol_table(paths, is_spoken=False)
+
+table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound 는 해당 어절이 두 개 이상의 형태소로 구성되어 있는지를 표시하는 column 이며, 각 형태소는 띄어쓰기로 구분됩니다.
+
+| | Eojeol | morphemes | Count | Is_compound |
+| --- | --- | --- |  --- | --- |
+| 0 | 등 | 등/NNB | 175 | False |
+| 1 | 있다. | 있/VX 다/EF ./SF | 142 | True |
+| 2 | 수 | 수/NNB | 135 | False |
+| 3 | 있는 | 있/VX 는/ETM | 91 | True |
+
 ## Requirements
 
 - BeautifulSoup >= 4.6.0
