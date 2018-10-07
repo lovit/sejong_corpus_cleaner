@@ -1,9 +1,10 @@
 import subprocess
 from bs4 import BeautifulSoup
 
-def check_encoding(paths):
-    for path in paths:
-        print(subprocess.getstatusoutput("file %s" % path)[1])
+def check_encoding(list_of_paths):
+    list_of_encodings = [subprocess.getstatusoutput("file %s" % path)[1]
+        for path in list_of_paths]
+    return list_of_encodings
 
 def load_written_text_as_sentences(filepath, encoding='utf-8', header=None):
 
