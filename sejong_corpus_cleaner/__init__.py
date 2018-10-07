@@ -7,3 +7,6 @@ from .utils import load_as_eojeol_table
 from .utils import write_sentences
 from .utils import Corpus
 from .statistics import count_tags
+from .statistics import count_tag_words
+from .simplify import tagmap
+from .simplify import simplify_tag
