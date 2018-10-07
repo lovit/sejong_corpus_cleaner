@@ -52,6 +52,8 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
 
 to_pos_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.
 
+    from sejong_corpus_cleaner import to_pos_sentences
+
     paths = ['../data/raw/spoken/5CT_0013.txt', '../data/raw/spoken/5CT_0014.txt']
     data = to_pos_sentences(paths, is_spoken= True)
 
