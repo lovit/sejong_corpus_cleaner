@@ -71,7 +71,7 @@ def to_morphemes_sentences(paths, is_spoken=True):
 
     return sentences_
 
-def to_eojeol_table(paths, is_spoken=True):
+def to_eojeol_table(paths, is_spoken=True, return_as_dict=False):
     if is_spoken:
         loader = load_spoken_text_as_sentences
     else:
@@ -93,6 +93,11 @@ def to_eojeol_table(paths, is_spoken=True):
                 except:
                     continue
 
+    if return_as_dict:
+        return dict(counter)
+    return _to_data_frame(counter)
+
+def _to_data_frame(counter):
     def is_compound(morphemes):
         return morphemes.count(' ') > 0
 
