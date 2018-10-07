@@ -122,6 +122,11 @@ def _to_data_frame(counter):
     )
     return df
 
+def write_sentences(sentences, path):
+    with open(path, 'w', encoding='utf-8') as f:
+        for sent in sentences:
+            f.write('%s\n' % sent)
+
 class Corpus:
 
     def __init__(self, morpheme_sentence_path, num_sent=-1):
