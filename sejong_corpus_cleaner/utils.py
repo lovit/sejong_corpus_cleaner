@@ -22,7 +22,8 @@ def load_written_text_as_sentences(filepath, encoding='utf-8', header=None):
     def remove_header(sent):
         return '\n'.join(eojeol.split('\t', 1)[-1] for eojeol in sent.split('\n'))
 
-    sentences = [remove_header(sent) for sent in sentences]
+    sentences = [remove_header(sent).strip() for sent in sentences]
+    sentences = [sent for sent in sentences if sent]
 
     return sentences
 
@@ -40,5 +41,6 @@ def load_spoken_text_as_sentences(filepath, encoding='utf-8', header=None):
 
     soup = BeautifulSoup('\n'.join(sentences), 'lxml')
     sentences = [sent.text.strip() for sent in soup.find_all('s')]
+    sentences = [sent for sent in sentences if sent]
 
     return sentences
