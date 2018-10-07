@@ -41,6 +41,7 @@ def load_written_text_as_sentences(filepath, encoding='utf-16', header=None):
 
     sentences = [remove_header(sent).strip() for sent in sentences]
     sentences = [sent for sent in sentences if sent]
+    sentences = [sent for sent in sentences if _is_right_form_of_sentence(sent)]
 
     return sentences
 
@@ -59,8 +60,18 @@ def load_spoken_text_as_sentences(filepath, encoding='utf-16', header=None):
     soup = BeautifulSoup('\n'.join(sentences), 'lxml')
     sentences = [sent.text.strip() for sent in soup.find_all('s')]
     sentences = [sent for sent in sentences if sent]
+    sentences = [sent for sent in sentences if _is_right_form_of_sentence(sent)]
 
     return sentences
+
+def _is_right_form_of_sentence(sent):
+    for eojeol in sent.split('\n'):
+        # check "따라서\t따라서/Advecb"
+        if eojeol.count('\t') != 1:
+            return False
+        if not ('/' in eojeol) or not eojeol:
+            return False
+    return True
 
 def _sentence_to_morphemes(sent):
     words = [
@@ -68,7 +79,7 @@ def _sentence_to_morphemes(sent):
              for word in eojeol.split('\t')[-1].split('+')
     ]
     # because spoken & written text have different word separate (' + ' and '+')
-    words = [word if word[0] != '/' else '+'+word for word in words if word]
+    words = [word if word[0] != '/' else '+'+word for word in words if word if '/' in word]
     return ' '.join(words)
 
 def load_as_morphemes_sentences(paths, is_spoken=True):
