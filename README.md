@@ -50,12 +50,12 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
 
 ### 세종말뭉치의 품사 체계를 이용하는 형태소 분석용 데이터셋 만들기
 
-to_pos_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.
+to_morphemes_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_spoken 을 True, False 로 설정해야 합니다.
 
-    from sejong_corpus_cleaner import to_pos_sentences
+    from sejong_corpus_cleaner import to_morphemes_sentences
 
     paths = ['../data/raw/spoken/5CT_0013.txt', '../data/raw/spoken/5CT_0014.txt']
-    data = to_pos_sentences(paths, is_spoken= True)
+    data = to_morphemes_sentences(paths, is_spoken= True)
 
     ['뭐/NP 타/VV 고/EC 가/VV ㅏ/EF ?/SF',
      '지하철/NNG ./SF',
@@ -65,7 +65,7 @@ to_pos_sentences 함수는 세종말뭉치의 원 데이터 (raw data) 를 띄�
     ]
 
     paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
-    data = to_pos_sentences(paths, is_spoken= False)
+    data = to_morphemes_sentences(paths, is_spoken= False)
 
     ['프랑스/NNP 의/JKG 세계/NNG 적/XSN 이/VCP ᆫ/ETM 의상/NNG 디자이너/NNG 엠마누엘/NNP ...,
      "웅가로/NNP 는/JX 침실/NNG 과/JC 식당/NNG ,/SP 욕실/NNG 에서/JKB 사용/NNG 하/XSV 는/ETM ...",
