@@ -1,5 +1,8 @@
+from collections import defaultdict
 import subprocess
 from bs4 import BeautifulSoup
+from pandas import DataFrame
+
 
 def check_encoding(list_of_paths):
     list_of_encodings = [subprocess.getstatusoutput("file %s" % path)[1]
@@ -67,3 +70,35 @@ def to_pos_sentences(paths, is_spoken=True):
         sentences_ += sentences
 
     return sentences_
+
+def to_eojeol_table(paths, is_spoken=True):
+    if is_spoken:
+        loader = load_spoken_text_as_sentences
+    else:
+        loader = load_written_text_as_sentences
+
+    counter = defaultdict(int)
+    for path in paths:
+        sentences = loader(path)
+        for sent in sentences:
+            for eojeol_morphemes in sent.split('\n'):
+                try:
+                    eojeol, morphemes = eojeol_morphemes.split('\t')
+                    # because spoken & written have difference format
+                    if not (' + ' in morphemes):
+                        morphemes = morphemes.replace('+', ' + ')
+                        morphemes = morphemes.replace('+ /', '+/')
+                    morphemes = morphemes.replace(' + ', ' ')
+                    counter[(eojeol, morphemes)] += 1
+                except:
+                    continue
+
+    def is_compound(morphemes):
+        return morphemes.count(' ') > 0
+
+    df = DataFrame(
+        [(eojeol, morphemes, count, is_compound(morphemes)) for (eojeol, morphemes), count in
+         sorted(counter.items(), key=lambda x:(-x[1], x[0][0]))],
+        columns = 'Eojeol morphemes Count Is_compound'.split()
+    )
+    return df
