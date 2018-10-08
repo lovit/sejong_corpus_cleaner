@@ -35,7 +35,7 @@ tagmap = {
  'VA': 'Adjective',
  'VCN': 'Adjective', # 아니
  'VCP': 'Adjective', # 이
- 'VV': 'Adverb',
+ 'VV': 'Verb',
  'VX': 'Verb',
  'XPN': 'Determiner', # 과/XPN+부가, 폐/XPN+휴지
  'XR': 'Noun', # 강렬, 간편, 비슷 # XR + XSV/XSA 는 동/형용사가 됨
