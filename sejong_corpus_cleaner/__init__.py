@@ -11,5 +11,5 @@ from .statistics import count_tags
 from .statistics import count_tag_words
 from .simplify import tagmap
 from .simplify import tagset
-from .simplify import simplify_tag
-from .simplify import simplify_sentence
+from .simplify import to_simple_tag
+from .simplify import to_simple_tag_sentence
