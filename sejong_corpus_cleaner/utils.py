@@ -6,10 +6,14 @@ def check_encoding(list_of_paths):
         for path in list_of_paths]
     return list_of_encodings
 
-def write_sentences(sentences, path):
+def write_corpus(corpus, path):
+    def pos_to_strf(pos):
+        return '%s/%s' % pos
+
     with open(path, 'w', encoding='utf-8') as f:
-        for sent in sentences:
-            f.write('%s\n' % sent)
+        for sent in corpus:
+            sent_strf = ' '.join(pos_to_strf(pos) for pos in sent)
+            f.write('%s\n' % sent_strf)
 
 def separate_word_tag(pos):
     return tuple(pos.rsplit('/', 1))
