@@ -2,19 +2,22 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 from pandas import DataFrame
 
-def load_raw_texts_as_sentences(filepaths, encoding='utf-16', is_spoken=True):
+from .. import separate_word_tag
+from .. import separate_eojeol_morphemes
+
+def load_texts_as_eojeol_morphemes(filepaths, encoding='utf-16', is_spoken=True):
 
     if is_spoken:
-        loader = load_raw_spoken_text_as_sentences
+        loader = load_spoken_text_as_eojeol_morphemes
     else:
-        loader = load_raw_written_text_as_sentences
+        loader = load_written_text_as_eojeol_morphemes
 
     sentences = []
     for path in filepaths:
         sentences += loader(path, encoding)
     return sentences
 
-def load_raw_written_text_as_sentences(filepath, encoding='utf-16', header=None):
+def load_written_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -35,10 +38,11 @@ def load_raw_written_text_as_sentences(filepath, encoding='utf-16', header=None)
     sentences = [remove_header(sent).strip() for sent in sentences]
     sentences = [sent for sent in sentences if sent]
     sentences = [sent for sent in sentences if _is_right_form_of_sentence(sent)]
+    sentences = [unify_morphemes_separator(sent) for sent in sentences]
 
     return sentences
 
-def load_raw_spoken_text_as_sentences(filepath, encoding='utf-16', header=None):
+def load_spoken_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -54,8 +58,19 @@ def load_raw_spoken_text_as_sentences(filepath, encoding='utf-16', header=None):
     sentences = [sent.text.strip() for sent in soup.find_all('s')]
     sentences = [sent for sent in sentences if sent]
     sentences = [sent for sent in sentences if _is_right_form_of_sentence(sent)]
+    sentences = [unify_morphemes_separator(sent) for sent in sentences]
 
     return sentences
+
+def unify_morphemes_separator(sent):
+    # because spoken & written have difference format
+    def unify(token):
+        if not (' + ' in token):
+            token = token.replace('+', ' + ')
+            token = token.replace('+ /', '+/')
+        return token
+
+    return '\n'.join([unify(token) for token in sent.split('\n') if token])
 
 def _is_right_form_of_sentence(sent):
     for eojeol in sent.split('\n'):
@@ -66,34 +81,29 @@ def _is_right_form_of_sentence(sent):
             return False
     return True
 
-def _sentence_to_morphemes(sent):
-    words = [
-        word.strip() for eojeol in sent.split('\n')
-             for word in eojeol.split('\t')[-1].split('+')
-    ]
-    # because spoken & written text have different word separate (' + ' and '+')
-    words = [word if word[0] != '/' else '+'+word for word in words if word if '/' in word]
-    return ' '.join(words)
-
-def load_raw_texts_as_morphemes_sentences(paths, is_spoken=True):
+def load_texts_as_corpus(paths, is_spoken=True):
     if is_spoken:
-        loader = load_raw_spoken_text_as_sentences
+        loader = load_spoken_text_as_eojeol_morphemes
     else:
-        loader = load_raw_written_text_as_sentences
+        loader = load_written_text_as_eojeol_morphemes
+
+    def sent_to_poses(sent):
+        return [pos for token in sent.split('\n')
+                    for pos in separate_eojeol_morphemes(token)[1]]
 
     sentences_ = []
     for path in paths:
         sentences = loader(path)
-        sentences = [_sentence_to_morphemes(sent) for sent in sentences]
+        sentences = [sent_to_poses(sent) for sent in sentences]
         sentences_ += sentences
 
     return sentences_
 
-def load_raw_texts_as_eojeol_table(paths, is_spoken=True, return_as_dict=False):
+def load_texts_as_eojeol_morphemes_table(paths, is_spoken=True, return_as_dict=False):
     if is_spoken:
-        loader = load_raw_spoken_text_as_sentences
+        loader = load_spoken_text_as_eojeol_morphemes
     else:
-        loader = load_raw_written_text_as_sentences
+        loader = load_written_text_as_eojeol_morphemes
 
     counter = defaultdict(int)
     for path in paths:
@@ -102,10 +112,6 @@ def load_raw_texts_as_eojeol_table(paths, is_spoken=True, return_as_dict=False):
             for eojeol_morphemes in sent.split('\n'):
                 try:
                     eojeol, morphemes = eojeol_morphemes.split('\t')
-                    # because spoken & written have difference format
-                    if not (' + ' in morphemes):
-                        morphemes = morphemes.replace('+', ' + ')
-                        morphemes = morphemes.replace('+ /', '+/')
                     morphemes = morphemes.replace(' + ', ' ')
                     counter[(eojeol, morphemes)] += 1
                 except:

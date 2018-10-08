@@ -11,6 +11,14 @@ def write_sentences(sentences, path):
         for sent in sentences:
             f.write('%s\n' % sent)
 
+def separate_word_tag(pos):
+    return tuple(pos.rsplit('/', 1))
+
+def separate_eojeol_morphemes(eojeol_morphemes):
+    eojeol, morphemes = eojeol_morphemes.split('\t')
+    poses = [separate_word_tag(pos) for pos in morphemes.split(' + ')]
+    return eojeol, poses
+
 def find_tag_snippets(corpus, tag, count=100, window=2):
     def has_tag(sent, tag):
         return [i for i, wt in enumerate(sent) if wt[1] == tag]
