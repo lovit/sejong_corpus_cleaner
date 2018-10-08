@@ -6,8 +6,10 @@ from .utils import load_as_morphemes_sentences
 from .utils import load_as_eojeol_table
 from .utils import write_sentences
 from .utils import Corpus
+from .utils import find_tag_snippets
 from .statistics import count_tags
 from .statistics import count_tag_words
 from .simplify import tagmap
 from .simplify import tagset
 from .simplify import simplify_tag
+from .simplify import simplify_sentence

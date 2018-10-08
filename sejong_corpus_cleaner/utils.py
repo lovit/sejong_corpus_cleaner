@@ -138,6 +138,19 @@ def write_sentences(sentences, path):
         for sent in sentences:
             f.write('%s\n' % sent)
 
+def find_tag_snippets(corpus, tag, count=100, window=2):
+    def has_tag(sent, tag):
+        return [i for i, wt in enumerate(sent) if wt[1] == tag]
+
+    snippest = []
+    for sent in corpus:
+        if len(snippest) >= count:
+            break
+        tag_idxs = has_tag(sent, tag)
+        for idx in tag_idxs:
+            snippest.append(sent[idx - window : idx + window + 1])
+    return snippest[:count]
+
 class Corpus:
 
     def __init__(self, morpheme_sentence_path, num_sent=-1):
@@ -149,5 +162,5 @@ class Corpus:
             for i, sent in enumerate(f):
                 if self.num_sent > 0 and i > self.num_sent:
                     break
-                morph_poss = [token.rsplit('/', 1) for token in sent.split()]
+                morph_poss = [tuple(token.rsplit('/', 1)) for token in sent.split()]
                 yield morph_poss
