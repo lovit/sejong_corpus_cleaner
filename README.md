@@ -105,18 +105,18 @@ table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound �
 
 | Simplified tag | Sejong corpus tags |
 | --- | --- |
-| Noun (명사) | NNB NNG NNP XR XSN |
+| Noun (명사) | NNB, NNG, NNP, XR, XSN |
 | Number (수사) | NR |
 | Pronoun (대명사) | NP |
-| Determiner (관형사) | MM XPN |
-| Adverb (부사) | MAG MAJ |
-| Josa (조사) | JC JKB JKC JKG JKO JKQ JKS JKV JX |
+| Determiner (관형사) | MM, XPN |
+| Adverb (부사) | MAG, MAJ |
+| Josa (조사) | JC, JKB, JKC, JKG, JKO, JKQ, JKS, JKV, JX |
 | Exclamation (감탄사) | IC |
-| Adjective (형용사 어근, 형태소) | VA VCN VCP XSA |
-| Verb (동사 어근, 형태소) | VV VX XSV |
-| Eomi (어미, 형태소) | EC EF EP ETM ETN |
+| Adjective (형용사 어근, 형태소) | VA, VCN, VCP, XSA |
+| Verb (동사 어근, 형태소) | VV, VX, XSV |
+| Eomi (어미, 형태소) | EC, EF, EP, ETM, ETN |
 | Unk (인식불능) | NA |
-| Symbol (기호) | SE SF SH SL SN SO SP SS SW |
+| Symbol (기호) | SE, SF, SH, SL, SN, SO, SP, SS, SW |
 
     from sejong_corpus_cleaner import to_simple_tag_sentence
 
