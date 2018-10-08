@@ -18,7 +18,7 @@
     ../data/raw/spoken/5CT_0013.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators
     ../data/raw/spoken/5CT_0014.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators
 
-### Loading raw texts as sentences
+### Loading raw texts as eojeol-morphemes
 
 세종말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. **load_spoken_text_as_eojeol_morphemes** 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, **load_written_text_as_eojeol_morphemes** 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
 
