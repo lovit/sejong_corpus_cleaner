@@ -17,12 +17,15 @@ def remove_symbol(eojeol, poses):
 
 def eojeol_poses_sentence_to_lr(sent):
     try:
-        sent_ = [eojeol_pos_to_lr(eojeol, poses) for eojeol, poses in sent]
+        sent_ = []
+        for eojeol, poses in sent:
+            if [w for w, t in poses if not w]:
+                continue
+            sent_.append(eojeol_pos_to_lr(eojeol, poses))
         return sent_
     except Exception as e:
-        print(e)
-        pprint(sent)
-        return []
+        message = str(e) + '\n' + '{}'.format(sent)
+        raise ValueError(message)
 
 def eojeol_pos_to_lr(eojeol, poses):
 
