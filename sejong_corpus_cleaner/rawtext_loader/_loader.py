@@ -4,6 +4,7 @@ from pandas import DataFrame
 
 from .. import separate_word_tag
 from .. import separate_eojeol_morphemes
+from .. import unicode_sentence
 
 def load_texts_as_eojeol_morphemes(filepaths, encoding='utf-16', is_spoken=True):
 
@@ -29,6 +30,7 @@ def load_written_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=No
     sentences = soup.find_all('p')
     sentences = [sent.text.strip() for sent in sentences]
     sentences = [sent for sent in sentences if sent[:len(header)] == header]
+    sentences = [unicode_sentence(sent) for sent in sentences]
 
     def remove_header(sent):
         sent_ = [eojeol.split('\t', 1)[-1].strip() for eojeol in sent.split('\n') if eojeol.count('\t') == 2]
@@ -59,6 +61,7 @@ def load_spoken_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=Non
     sentences = [sent for sent in sentences if sent]
     sentences = [sent for sent in sentences if _is_right_form_of_sentence(sent)]
     sentences = [unify_morphemes_separator(sent) for sent in sentences]
+    sentences = [unicode_sentence(sent) for sent in sentences]
 
     return sentences
 

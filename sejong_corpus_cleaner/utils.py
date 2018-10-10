@@ -35,3 +35,40 @@ def find_tag_snippets(corpus, tag, count=100, window=2):
         for idx in tag_idxs:
             snippest.append(sent[idx - window : idx + window + 1])
     return snippest[:count]
+
+unicode_mapper = {
+  'ᆨ': 'ㄱ',
+  'ᆩ': 'ㄲ',
+  'ᆪ': 'ㄳ',
+  'ᆫ': 'ㄴ',
+  'ᆬ': 'ㄵ',
+  'ᆭ': 'ㄶ',
+  'ᆮ': 'ㄷ',
+  'ᆯ': 'ㄹ',
+  'ᆰ': 'ㄺ',
+  'ᆱ': 'ㄻ',
+  'ᆲ': 'ㄼ',
+  'ᆳ': 'ㄽ',
+  'ᆴ': 'ㄾ',
+  'ᆵ': 'ㄿ',
+  'ᆶ': 'ㅀ',
+  'ᄆ': 'ㅁ', # 4358
+  'ᆷ': 'ㅁ', # 4535
+  'ᆸ': 'ㅂ',
+  'ᆹ': 'ㅄ',
+  'ᆺ': 'ㅅ',
+  'ᆻ': 'ㅆ',
+  'ᆼ': 'ㅇ',
+  'ᆽ': 'ㅈ',
+  'ᆾ': 'ㅊ',
+  'ᆿ': 'ㅋ',
+  'ᇀ': 'ㅌ',
+  'ᇁ': 'ㅍ',
+  'ᇂ': 'ㅎ',
+}
+
+def unicode_character(c):
+    return unicode_mapper.get(c, c)
+
+def unicode_sentence(sent):
+    return ''.join(unicode_character(c) for c in sent)
