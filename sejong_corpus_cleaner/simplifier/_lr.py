@@ -1,4 +1,9 @@
 from ._simplify import to_simple_tag
+from .. import is_hangle
+from .. import is_jaum
+from .. import is_moum
+from .. import compose
+from .. import decompose
 
 def remove_symbol(eojeol, poses):
     symbols = {pos[0] for pos in poses if pos[1][0] == 'S'}
