@@ -1,5 +1,5 @@
-kor_begin = 44032
-kor_end = 55203
+hangle_begin = 44032
+hangle_end = 55203
 chosung_base  = 588
 jungsung_base = 28
 jaum_begin = 12593
@@ -30,6 +30,9 @@ jongsung_list = [
     'ㅌ', 'ㅍ', 'ㅎ'
 ]
 
+def is_hangle(c):
+    return hangle_begin <= ord(c) <= hangle_end
+
 def is_jaum(c):
     return jaum_begin <= ord(c) <= jaum_end
 
@@ -38,7 +41,7 @@ def is_moum(c):
 
 def compose(chosung, jungsung, jongsung):
     hangle = chr(
-        kor_begin +
+        hangle_begin +
         chosung_base * chosung_list.index(chosung) +
         jungsung_base * jungsung_list.index(jungsung) +
         jongsung_list.index(jongsung)
@@ -51,7 +54,7 @@ def decompose(c):
         return (c, ' ', ' ')
     if (moum_begin <= i <= moum_end):
         return (' ', c, ' ')    
-    i -= kor_begin
+    i -= hangle_begin
     cho  = i // chosung_base
     jung = ( i - cho * chosung_base ) // jungsung_base 
     jong = ( i - cho * chosung_base - jung * jungsung_base )    
