@@ -77,7 +77,13 @@ def _is_right_form_of_sentence(sent):
         # check "따라서\t따라서/Advecb"
         if eojeol.count('\t') != 1:
             return False
-        if not ('/' in eojeol) or ('->' in eojeol) or (not eojeol):
+        if (not ('/' in eojeol) or
+            ('->' in eojeol) or
+            # confusing with HTML tags
+            ('</SS' in eojeol) or
+            ('>/SS' in eojeol) or
+            (not eojeol)
+           ):
             return False
     return True
 
