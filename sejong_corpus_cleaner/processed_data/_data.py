@@ -16,22 +16,27 @@ class Corpus:
                     morph_poss = [tuple(token.rsplit('/', 1)) for token in sent.split()]
                     yield morph_poss
 
-class EojeolPoses:
-    def __init__(self, eojeol_poses_paths, num_eojeol=-1):
+class EojeolPosesSentence:
+    def __init__(self, eojeol_poses_paths, num_sent=-1):
         if isinstance(eojeol_poses_paths, str):
             eojeol_poses_paths = [eojeol_poses_paths]
         self.paths = eojeol_poses_paths
-        self.num_eojeol = num_eojeol
+        self.num_sent = num_sent
 
     def __iter__(self):
-        num_eojeol = 0
+        num_sent = 0
         for path in self.paths:
+            if self.num_sent > 0 and num_sent >= self.num_sent:
+                break
             with open(path, encoding='utf-8') as f:
+                eojeol_poses = []
                 for line in f:
-                    if (self.num_eojeol > 0) and (num_eojeol >= self.num_eojeol):
+                    if self.num_sent > 0 and num_sent >= self.num_sent:
                         break
                     line = line.strip()
                     if not line:
+                        num_sent += 1
+                        yield eojeol_poses
+                        eojeol_poses = []
                         continue
-                    num_eojeol += 1
-                    yield separate_eojeol_poses(line)
+                    eojeol_poses.append(separate_eojeol_poses(line))

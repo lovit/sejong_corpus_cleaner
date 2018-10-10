@@ -1,2 +1,2 @@
 from ._data import Corpus
-from ._data import EojeolPoses
+from ._data import EojeolPosesSentence
