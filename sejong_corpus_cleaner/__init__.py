@@ -1,3 +1,7 @@
+from .hangle import is_jaum
+from .hangle import is_moum
+from .hangle import compose
+from .hangle import decompose
 from .utils import check_encoding
 from .utils import write_corpus
 from .utils import find_tag_snippets
