@@ -1,4 +1,4 @@
-from .. import separate_eojeol_morphemes
+from .. import separate_eojeol_poses
 
 class Corpus:
     def __init__(self, corpus_paths, num_sent=-1):
@@ -16,11 +16,11 @@ class Corpus:
                     morph_poss = [tuple(token.rsplit('/', 1)) for token in sent.split()]
                     yield morph_poss
 
-class EojeolMorphemes:
-    def __init__(self, eojeol_morphemes_paths, num_eojeol=-1):
-        if isinstance(eojeol_morphemes_paths, str):
-            eojeol_morphemes_paths = [eojeol_morphemes_paths]
-        self.paths = eojeol_morphemes_paths
+class EojeolPoses:
+    def __init__(self, eojeol_poses_paths, num_eojeol=-1):
+        if isinstance(eojeol_poses_paths, str):
+            eojeol_poses_paths = [eojeol_poses_paths]
+        self.paths = eojeol_poses_paths
         self.num_eojeol = num_eojeol
 
     def __iter__(self):
@@ -34,4 +34,4 @@ class EojeolMorphemes:
                     if not line:
                         continue
                     num_eojeol += 1
-                    yield separate_eojeol_morphemes(line)
+                    yield separate_eojeol_poses(line)

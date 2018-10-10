@@ -18,8 +18,8 @@ def write_corpus(corpus, path):
 def separate_word_tag(pos):
     return tuple(pos.rsplit('/', 1))
 
-def separate_eojeol_morphemes(eojeol_morphemes):
-    eojeol, morphemes = eojeol_morphemes.split('\t')
+def separate_eojeol_poses(eojeol_poses):
+    eojeol, morphemes = eojeol_poses.split('\t')
     poses = [separate_word_tag(pos) for pos in morphemes.split(' + ')]
     return eojeol, poses
 

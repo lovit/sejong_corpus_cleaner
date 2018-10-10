@@ -3,22 +3,22 @@ from bs4 import BeautifulSoup
 from pandas import DataFrame
 
 from .. import separate_word_tag
-from .. import separate_eojeol_morphemes
+from .. import separate_eojeol_poses
 from .. import unicode_sentence
 
-def load_texts_as_eojeol_morphemes(filepaths, encoding='utf-16', is_spoken=True):
+def load_texts_as_eojeol_poses(filepaths, encoding='utf-16', is_spoken=True):
 
     if is_spoken:
-        loader = load_spoken_text_as_eojeol_morphemes
+        loader = load_spoken_text_as_eojeol_poses
     else:
-        loader = load_written_text_as_eojeol_morphemes
+        loader = load_written_text_as_eojeol_poses
 
     sentences = []
     for path in filepaths:
         sentences += loader(path, encoding)
     return sentences
 
-def load_written_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=None):
+def load_written_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -44,7 +44,7 @@ def load_written_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=No
 
     return sentences
 
-def load_spoken_text_as_eojeol_morphemes(filepath, encoding='utf-16', header=None):
+def load_spoken_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -92,13 +92,13 @@ def _is_right_form_of_sentence(sent):
 
 def load_texts_as_corpus(paths, is_spoken=True):
     if is_spoken:
-        loader = load_spoken_text_as_eojeol_morphemes
+        loader = load_spoken_text_as_eojeol_poses
     else:
-        loader = load_written_text_as_eojeol_morphemes
+        loader = load_written_text_as_eojeol_poses
 
     def sent_to_poses(sent):
         return [pos for token in sent.split('\n')
-                    for pos in separate_eojeol_morphemes(token)[1]]
+                    for pos in separate_eojeol_poses(token)[1]]
 
     sentences_ = []
     for path in paths:
@@ -108,19 +108,19 @@ def load_texts_as_corpus(paths, is_spoken=True):
 
     return sentences_
 
-def load_texts_as_eojeol_morphemes_table(paths, is_spoken=True, return_as_dict=False):
+def load_texts_as_eojeol_poses_table(paths, is_spoken=True, return_as_dict=False):
     if is_spoken:
-        loader = load_spoken_text_as_eojeol_morphemes
+        loader = load_spoken_text_as_eojeol_poses
     else:
-        loader = load_written_text_as_eojeol_morphemes
+        loader = load_written_text_as_eojeol_poses
 
     counter = defaultdict(int)
     for path in paths:
         sentences = loader(path)
         for sent in sentences:
-            for eojeol_morphemes in sent.split('\n'):
+            for eojeol_poses in sent.split('\n'):
                 try:
-                    eojeol, morphemes = eojeol_morphemes.split('\t')
+                    eojeol, morphemes = eojeol_poses.split('\t')
                     morphemes = morphemes.replace(' + ', ' ')
                     counter[(eojeol, morphemes)] += 1
                 except:
