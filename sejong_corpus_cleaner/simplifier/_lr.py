@@ -95,7 +95,7 @@ def reformat(eojeol, poses, tag_i, l_tag, r_tag_=None):
 
     # 오고, [['들어오', 'VV'], ['고', 'EC']]
     # 맞이해, [['맞이하', 'VV'], ['여', 'EC']]
-    if len(poses) == 2:
+    if len(poses) == 2 and is_hangle(poses[1][0][0]):
         l, r = poses[0][0], poses[1][0]
         l_tag = to_simple_tag(poses[0][1])
         r_tag = to_simple_tag(poses[1][1])
