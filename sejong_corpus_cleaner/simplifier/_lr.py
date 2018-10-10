@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from ._simplify import to_simple_tag
 from .. import is_hangle
 from .. import is_jaum
@@ -5,12 +7,22 @@ from .. import is_moum
 from .. import compose
 from .. import decompose
 
+
 def remove_symbol(eojeol, poses):
     symbols = {pos[0] for pos in poses if pos[1][0] == 'S'}
     for s in symbols:
         eojeol = eojeol.replace(s, '')
     poses = [pos for pos in poses if (not pos[1][0] == 'S') and (not '(' in pos[0])]
     return eojeol, poses
+
+def eojeol_poses_sentence_to_lr(sent):
+    try:
+        sent_ = [eojeol_pos_to_lr(eojeol, poses) for eojeol, poses in sent]
+        return sent_
+    except Exception as e:
+        print(e)
+        pprint(sent)
+        return []
 
 def eojeol_pos_to_lr(eojeol, poses):
 
