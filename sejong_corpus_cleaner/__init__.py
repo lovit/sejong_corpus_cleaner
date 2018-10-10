@@ -1,3 +1,4 @@
+from .hangle import is_hangle
 from .hangle import is_jaum
 from .hangle import is_moum
 from .hangle import compose
