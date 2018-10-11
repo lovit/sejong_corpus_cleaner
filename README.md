@@ -253,12 +253,12 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
 
 위 변환을 위하여 다음의 함수가 이용됩니다.
 
-    from sejong_corpus_cleaner.simplifier import eojeol_pos_to_lr
+    from sejong_corpus_cleaner.simplifier import eojeol_poses_to_lr
 
     eojeol = '나눠져'
     poses = [['나누', 'VV'], ['ㅓ', 'EC'], ['지', 'VX'], ['ㅓ', 'EC']]
 
-    print(eojeol_pos_to_lr(eojeol, poses))
+    print(eojeol_poses_to_lr(eojeol, poses))
     # ('나눠지', '어', 'Verb', 'Eomi')
 
 하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다.

@@ -21,20 +21,20 @@ def eojeol_poses_sentence_to_lr(sent):
         for eojeol, poses in sent:
             if [w for w, t in poses if not w]:
                 continue
-            sent_.append(eojeol_pos_to_lr(eojeol, poses))
+            sent_.append(eojeol_poses_to_lr(eojeol, poses))
         return sent_
     except Exception as e:
         message = str(e) + '\n' + '{}'.format(sent)
         raise ValueError(message)
 
-def eojeol_pos_to_lr(eojeol, poses):
+def eojeol_poses_to_lr(eojeol, poses):
 
     eojeol, poses = remove_symbol(eojeol, poses)
 
     if eojeol in _hard_code:
         return _hard_code[eojeol]
 
-    return _eojeol_pos_to_lr(eojeol, poses)
+    return _eojeol_poses_to_lr(eojeol, poses)
 
 _hard_code = {
     '못지': ('못지', '', 'Adverb', ''),
@@ -43,7 +43,7 @@ _hard_code = {
     '짝짝짝두': ('짝짝짝', '두', 'Noun', 'Josa'),
 }
 
-def _eojeol_pos_to_lr(eojeol, poses):
+def _eojeol_poses_to_lr(eojeol, poses):
     if not eojeol or not poses:
         return ('', '', '', '')
 
