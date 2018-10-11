@@ -300,5 +300,6 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
 
 ## Requirements
 
-- BeautifulSoup >= 4.6.0
+- beautifulsoup4 >= 4.6.0
 - pandas >= 0.23.4
+- lxml >= 3.7.0
