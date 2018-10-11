@@ -1,8 +1,36 @@
 # 세종 말뭉치 정제를 위한 utils
 
-국립국어원에서 배포한 세종 말뭉치로부터 학습에 필요한 부분만을 취하기 위한 utils 입니다.
+국립국어원에서 배포한 세종 말뭉치로부터 학습에 필요한 부분만을 취하기 위한 utils 입니다. 세종 말뭉치 데이터는 재배포가 제한되어 있기 때문에 원 데이터에서부터 필요한 정보를 추출하는 함수를 작성하였습니다.
 
 ## Usage
+
+### Directory
+
+README 의 예시 코드는 아래의 폴더 구조를 전제합니다. script 폴더 안에서 작업한 코드 예시 입니다.
+
+    |- sejong_corpus_cleaner # package folder
+        |- processed_data
+        |- rawtext_loader
+        |- simplifier
+        |- ...
+    |- data # 데이터 폴더
+        |- raw
+            |- spoken  # 문어 말뭉치, 200 개 파일
+                |- 5CT_0013.txt;
+                |- 5CT_0014.txt;
+                |- 5CT_0015.txt;
+                |- ...
+                |- 9CT_0012.txt;
+                |- 9CT_0013.txt;
+            |- written # 구어 말뭉치, 279 개 파일
+                |- BTAA0001.txt;
+                |- BTAA0002.txt;
+                |- ...
+                |- BTJO0446.txt;
+                |- BTJO0447.txt;
+        |- clean
+    |- script #코드 폴더
+    |- README.md;
 
 ### Check encoding
 
