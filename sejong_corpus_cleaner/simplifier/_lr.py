@@ -70,7 +70,7 @@ def _eojeol_poses_to_lr(eojeol, poses):
     #   [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
     # 생각하다-> (('생각', '', 'Noun', ''), ('하', '다', 'Verb', 'Eomi'))
     #   [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')]
-    for tag in 'XSV XSA'.split():
+    for tag in 'XSV XSA VCP VCN'.split():
         tag_i = last_tag_index(poses, tag, use_simple=False)
         if tag_i > 0 and to_simple_tag(poses[tag_i-1][1]) == 'Noun':
             eojeol0 = ''.join(w for w, _ in poses[:tag_i])
