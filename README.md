@@ -289,14 +289,25 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
     print(eojeol_poses_to_lr(eojeol, poses))
     # ('나눠지', '어', 'Verb', 'Eomi')
 
-하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다.
+
+어절 내 형태소들을 L-R 구조로 변형할 때, 명사 뒤에 위치하는 동사/형용사 전성 어미인 XSV/XSA 와 긍정/부정 지정사인 VCP/VCN 은 명사와 함께 하나의 L 로 볼 수도 있고, 독립된 L 로 볼 수 도 있습니다. 이는 사용자 패러매터로 조절할 수 있습니다. separate_xsv 의 기본값은 True 입니다. '생각했어요'는 '생각하/Verb + 았어요/Eomi' 로 볼 수도 있으며, '생각/Noun + 하/Verb + 았어요/Eomi' 로 볼 수도 있습니다. L-R 은 한 어절에 L 과 R 의 성분이 있다고 가정하므로 후자의 경우는 '(생각/Noun, L), (하/Verb, L), (았어요/Eomi, R)' 로 표현됩니다.
+
+    eojeol = '생각했어요'
+    poses = [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
+    eojeol_poses_to_lr(eojeol, poses, separate_xsv=True)
+    # (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
+
+    eojeol_poses_to_lr(eojeol, poses, separate_xsv=False)
+    # ('생각하', '았어요', 'Verb', 'Eomi')
+
+하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다. 이때에도 separate_xsv 패러매터를 입력할 수 있습니다. 기본값은 True 입니다.
 
     from sejong_corpus_cleaner.processed_data import EojeolPosesSentence
     from sejong_corpus_cleaner.simplifier import eojeol_poses_sentence_to_lr
 
     eps = EojeolPosesSentence('../data/clean/eojeol_poses_written.txt')
     for sent in eps:
-        sent_ = eojeol_poses_sentence_to_lr(sent)
+        sent_ = eojeol_poses_sentence_to_lr(sent, separate_xsv=True)
 
 ## Requirements
 
