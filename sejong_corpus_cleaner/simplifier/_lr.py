@@ -21,7 +21,10 @@ def eojeol_poses_sentence_to_lr(sent):
         for eojeol, poses in sent:
             if [w for w, t in poses if not w]:
                 continue
-            sent_.append(eojeol_poses_to_lr(eojeol, poses))
+            lr = eojeol_poses_to_lr(eojeol, poses)
+            sent_.append(lr[0])
+            if len(lr) == 2:
+                sent_.append(lr[1])
         return sent_
     except Exception as e:
         message = str(e) + '\n' + '{}'.format(sent)
@@ -45,22 +48,36 @@ _hard_code = {
 
 def _eojeol_poses_to_lr(eojeol, poses):
     if not eojeol or not poses:
-        return ('', '', '', '')
+        return (('', '', '', ''), )
 
     first_tag = to_simple_tag(poses[0][1])
     if first_tag == 'Josa' or first_tag == 'Eomi':
-        return (eojeol, '', first_tag, '')
+        return ((eojeol, '', first_tag, ''), )
 
     # 일/NR + 년NNG
     last_tag = to_simple_tag(poses[-1][1])
     if last_tag == 'Noun':
-        return (eojeol, '', 'Noun', '')
+        return ((eojeol, '', 'Noun', ''), )
 
     if len(poses) == 1:
-        return eojeol, '', to_simple_tag(poses[0][1]), ''
+        return ((eojeol, '', to_simple_tag(poses[0][1]), ''), )
 
     if len(poses) == 2:
-        return reformat(eojeol, poses, 0, first_tag)
+        return (reformat(eojeol, poses, 0, first_tag), )
+
+    # XSV (동사형 파생 접미사), XSA: 형용사형 파생 접미사 -> 독립어절
+    # 생각했어요-> (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
+    #   [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
+    # 생각하다-> (('생각', '', 'Noun', ''), ('하', '다', 'Verb', 'Eomi'))
+    #   [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')]
+    for tag in 'XSV XSA'.split():
+        tag_i = last_tag_index(poses, tag, use_simple=False)
+        if tag_i > 0 and to_simple_tag(poses[tag_i-1][1]) == 'Noun':
+            eojeol0 = ''.join(w for w, _ in poses[:tag_i])
+            eojeol1 = eojeol[len(eojeol0):]
+            lr0 = (eojeol0, '', 'Noun', '')
+            lr1 = reformat(eojeol1, poses[tag_i:], 0, to_simple_tag(tag))
+            return (lr0, lr1)
 
     for tag in 'Noun Pronoun Number Verb Adjective'.split():
         tag_i = last_tag_index(poses, tag)
@@ -70,7 +87,7 @@ def _eojeol_poses_to_lr(eojeol, poses):
                 l = ''.join(w for w, _ in poses[:tag_i+1])
                 r = ''.join(w for w, _ in poses[tag_i+1:])
                 return l, r, tag, 'Eomi'
-            return reformat(eojeol, poses, tag_i, tag)
+            return (reformat(eojeol, poses, tag_i, tag), )
 
     # 지금/MAG + 도/JX
     # XX/UNC + 를/JKO
@@ -79,23 +96,25 @@ def _eojeol_poses_to_lr(eojeol, poses):
         tag_i = last_tag_index(poses, tag)
         if (tag_i >= 0):
             if tag_i + 1== len(poses):
-                return eojeol, '', tag, ''
+                return ((eojeol, '', tag, ''), )
             if ((to_simple_tag(poses[tag_i+1][1]) == 'Josa') or
                 (to_simple_tag(poses[tag_i+1][1]) == 'Eomi')
                ):
-                return reformat(eojeol, poses, tag_i, 'Noun', 'Josa')
+                return (reformat(eojeol, poses, tag_i, 'Noun', 'Josa'), )
 
     second_tag = to_simple_tag(poses[1][1])
     if second_tag == 'Josa':
-        return reformat(eojeol, poses, 0, 'Noun', 'Josa')
+        return (reformat(eojeol, poses, 0, 'Noun', 'Josa'), )
     raise ValueError('Exception: eojeol = {}, poses = {}'.format(eojeol, poses))
 
-def last_tag_index(poses, tag):
-    noun_index = -1
+def last_tag_index(poses, tag, use_simple=True):
+    last_index = -1
     for i, (w, t) in enumerate(poses):
-        if to_simple_tag(t) == tag:
-            noun_index = i
-    return noun_index
+        if use_simple and to_simple_tag(t) == tag:
+            last_index = i
+        elif not use_simple and t == tag:
+            last_index = i
+    return last_index
 
 def split_index(poses, index):
     previous_subword = ''.join([remove_jamo(pos[0]) for pos in poses[:index+1]])
