@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from sejong_corpus_cleaner.simplifier._lr import _eojeol_poses_to_lr
+from sejong_corpus_cleaner.simplifier import eojeol_poses_to_lr
 
 def main():
     test_sets = [
@@ -39,7 +39,12 @@ def main():
     ]
 
     for eojeol, poses, tag in test_sets:
-        print('{}-> {}\nposes = {}'.format(eojeol, _eojeol_poses_to_lr(eojeol, poses), poses), end='\n\n')
+        result0 = eojeol_poses_to_lr(eojeol, poses, separate_xsv=False)
+        result1 = eojeol_poses_to_lr(eojeol, poses)
+        if result0 == result1:
+            print('{}-> {}\nposes = {}'.format(eojeol, result0[0], poses), end='\n\n')
+        else:
+            print('{}-> {}, {}\nposes = {}'.format(eojeol, result0[0], result1, poses), end='\n\n')
 
 if __name__ == '__main__':
     main()
