@@ -15,13 +15,13 @@ def remove_symbol(eojeol, poses):
     poses = [pos for pos in poses if (not pos[1][0] == 'S') and (not '(' in pos[0])]
     return eojeol, poses
 
-def eojeol_poses_sentence_to_lr(sent):
+def eojeol_poses_sentence_to_lr(sent, separate_xsv=True):
     try:
         sent_ = []
         for eojeol, poses in sent:
             if [w for w, t in poses if not w]:
                 continue
-            lr = eojeol_poses_to_lr(eojeol, poses)
+            lr = eojeol_poses_to_lr(eojeol, poses, separate_xsv)
             sent_.append(lr[0])
             if len(lr) == 2:
                 sent_.append(lr[1])
@@ -30,14 +30,14 @@ def eojeol_poses_sentence_to_lr(sent):
         message = str(e) + '\n' + '{}'.format(sent)
         raise ValueError(message)
 
-def eojeol_poses_to_lr(eojeol, poses):
+def eojeol_poses_to_lr(eojeol, poses, separate_xsv=True):
 
     eojeol, poses = remove_symbol(eojeol, poses)
 
     if eojeol in _hard_code:
         return _hard_code[eojeol]
 
-    return _eojeol_poses_to_lr(eojeol, poses)
+    return _eojeol_poses_to_lr(eojeol, poses, separate_xsv)
 
 _hard_code = {
     '못지': ('못지', '', 'Adverb', ''),
@@ -46,7 +46,7 @@ _hard_code = {
     '짝짝짝두': ('짝짝짝', '두', 'Noun', 'Josa'),
 }
 
-def _eojeol_poses_to_lr(eojeol, poses):
+def _eojeol_poses_to_lr(eojeol, poses, separate_xsv=True):
     if not eojeol or not poses:
         return (('', '', '', ''), )
 
@@ -73,11 +73,14 @@ def _eojeol_poses_to_lr(eojeol, poses):
     for tag in 'XSV XSA VCP VCN'.split():
         tag_i = last_tag_index(poses, tag, use_simple=False)
         if tag_i > 0 and to_simple_tag(poses[tag_i-1][1]) == 'Noun':
-            eojeol0 = ''.join(w for w, _ in poses[:tag_i])
-            eojeol1 = eojeol[len(eojeol0):]
-            lr0 = (eojeol0, '', 'Noun', '')
-            lr1 = reformat(eojeol1, poses[tag_i:], 0, to_simple_tag(tag))
-            return (lr0, lr1)
+            if separate_xsv:
+                eojeol0 = ''.join(w for w, _ in poses[:tag_i])
+                eojeol1 = eojeol[len(eojeol0):]
+                lr0 = (eojeol0, '', 'Noun', '')
+                lr1 = reformat(eojeol1, poses[tag_i:], 0, to_simple_tag(tag))
+                return (lr0, lr1)
+            else:
+                return (reformat(eojeol, poses, tag_i, to_simple_tag(tag)), )
 
     for tag in 'Noun Pronoun Number Verb Adjective'.split():
         tag_i = last_tag_index(poses, tag)
