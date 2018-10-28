@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from sejong_corpus_cleaner.simplifier import eojeol_pos_to_lr
+from sejong_corpus_cleaner.simplifier._lr import _eojeol_poses_to_lr
 
 def main():
     test_sets = [
@@ -12,7 +12,6 @@ def main():
         ('지금이라면은,', [['지금', 'MAG'], ['이', 'VCP'], ['라면은', 'EC'], [',', 'SP']], 'Adjective'),
         ('지금이라면은,', [['지금', 'NNG'], ['이', 'VCP'], ['라면은', 'EC'], [',', 'SP']], 'Noun'),
         ('지금도,', [['지금', 'MAG'], ['도', 'JX'], [',', 'SP']], 'Josa'), 
-        ("'지금……", [["'", 'SS'], ['지금', 'MAG'], ['…', 'SE'], ['…', 'SE']], ''),
         ('일년', [['일', 'NR'], ['년', 'NNB']], 'Noun'),
         ('보내', [['보내', 'VV'], ['ㅓ', 'EC']], 'Verb'),
         ('따라', [['따르', 'VV'], ['ㅏ', 'EC']], 'Verb'),
@@ -27,7 +26,6 @@ def main():
         ('그래요?', [['그래', 'IC'], ['요', 'JX'], ['?', 'SF']], 'Exclamation'),
         ('진짜야?', [['진짜', 'MAG'], ['(이)', 'VCP'], ['야', 'EF'], ['?', 'SF']], 'Adverb'),
         ('오고', [['들어오', 'VV'], ['고', 'EC']], 'Verb'),
-        ('또또또또!', [['또', 'MAG'], ['또', 'MAJ'], ['또', 'MAJ'], ['또', 'MAJ'], ['!', 'SF']], 'Adverb'),
         ('어쩌구', [['어찌', 'MAG'], ['하', 'XSV'], ['구', 'EC']], 'Verb'),
         ('대한', [['대하', 'VV'], ['ᆫ', 'ETM']], 'Verb'),
         ('맞이해', [['맞이하', 'VV'], ['여', 'EC']], 'Verb'),
@@ -35,10 +33,13 @@ def main():
         ('못지', [['못', 'MAG'], ['하', 'XSA'], ['지', 'EC']], 'Adverb'),
         ('다해', [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']], 'Verb'),
         ('됨직한', [['되', 'VV'], ['ㅁ직', 'EC'], ['하', 'XSA'], ['ㄴ', 'ETM']], 'Adjective'),
+        ('느낀다"고', [('느끼', 'VV'), ('ㄴ다', 'EC'), ('"', 'SS'), ('고', 'JKQ')], 'Verb'),
+        ('생각했어요', [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')], ''),
+        ('생각하다', [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')], '')
     ]
 
     for eojeol, poses, tag in test_sets:
-        print('{}-> {}\nposes = {}'.format(eojeol, eojeol_pos_to_lr(eojeol, poses), poses), end='\n\n')
+        print('{}-> {}\nposes = {}'.format(eojeol, _eojeol_poses_to_lr(eojeol, poses), poses), end='\n\n')
 
 if __name__ == '__main__':
     main()
