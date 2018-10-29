@@ -15,17 +15,17 @@ def write_corpus(corpus, path):
             sent_strf = ' '.join(pos_to_strf(pos) for pos in sent)
             f.write('%s\n' % sent_strf)
 
-def separate_word_tag(pos):
-    return tuple(pos.rsplit('/', 1))
+def separate_morph_tag(morphtag):
+    return tuple(morphtag.rsplit('/', 1))
 
-def separate_eojeol_morphtag(eojeol_morphtag):
-    eojeol, morphemes = eojeol_morphtag.split('\t')
-    morphtag = [separate_word_tag(pos) for pos in morphemes.split(' + ')]
-    return eojeol, morphtag
+def separate_eojeol_morphtag(eojeol_morphtags):
+    eojeol, morphtags = eojeol_morphtags.split('\t')
+    morphtags = [separate_morph_tag(morphtag) for morphtag in morphtags.split(' + ')]
+    return eojeol, morphtags
 
 def find_tag_snippets(corpus, tag, count=100, window=2):
     def has_tag(sent, tag):
-        return [i for i, wt in enumerate(sent) if wt[1] == tag]
+        return [i for i, (morph_i, tag_i) in enumerate(sent) if tag_i == tag]
 
     snippest = []
     for sent in corpus:

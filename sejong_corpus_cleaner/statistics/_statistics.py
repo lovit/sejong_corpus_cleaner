@@ -11,7 +11,7 @@ def count_tags(corpus):
     """
     return Counter(tag for sent in corpus for _, tag in sent)
 
-def count_tag_words(corpus):
+def count_tag_morphs(corpus):
     """corpus is nested list (like) format
 
         [[(word, tag), (word, tag), .. ],
@@ -19,8 +19,8 @@ def count_tag_words(corpus):
          ...
         ]
     """
-    counter = Counter((tag, word) for sent in corpus for word, tag in sent)
+    counter = Counter((tag, morph) for sent in corpus for morph, tag in sent)
     counter_ = defaultdict(lambda: {})
-    for (tag, word), count in counter.items():
-        counter_[tag][word] = count
+    for (tag, morph), count in counter.items():
+        counter_[tag][morph] = count
     return counter_

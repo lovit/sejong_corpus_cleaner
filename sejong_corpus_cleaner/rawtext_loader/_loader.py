@@ -118,11 +118,11 @@ def load_texts_as_eojeol_morphtag_table(paths, is_colloquial=True, return_as_dic
     for path in paths:
         sentences = loader(path)
         for sent in sentences:
-            for eojeol_morphtag in sent.split('\n'):
+            for eojeol_morphtags in sent.split('\n'):
                 try:
-                    eojeol, morphemes = eojeol_morphtag.split('\t')
-                    morphemes = morphemes.replace(' + ', ' ')
-                    counter[(eojeol, morphemes)] += 1
+                    eojeol, morphtags = eojeol_morphtags.split('\t')
+                    morphtags = morphtags.replace(' + ', ' ')
+                    counter[(eojeol, morphtags)] += 1
                 except:
                     continue
 
@@ -131,12 +131,12 @@ def load_texts_as_eojeol_morphtag_table(paths, is_colloquial=True, return_as_dic
     return _to_data_frame(counter)
 
 def _to_data_frame(counter):
-    def is_compound(morphemes):
-        return morphemes.count(' ') > 0
+    def is_compound(morphtags):
+        return morphtags.count(' ') > 0
 
     df = DataFrame(
-        [(eojeol, morphemes, count, is_compound(morphemes)) for (eojeol, morphemes), count in
+        [(eojeol, morphtags, count, is_compound(morphtags)) for (eojeol, morphtags), count in
          sorted(counter.items(), key=lambda x:(-x[1], x[0][0]))],
-        columns = 'Eojeol morphemes Count Is_compound'.split()
+        columns = 'Eojeol morphtags Count Is_compound'.split()
     )
     return df

@@ -123,7 +123,7 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
 
 table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound 는 해당 어절이 두 개 이상의 형태소로 구성되어 있는지를 표시하는 column 이며, 각 형태소는 띄어쓰기로 구분됩니다.
 
-| | Eojeol | morphemes | Count | Is_compound |
+| | Eojeol | morphtags | Count | Is_compound |
 | --- | --- | --- |  --- | --- |
 | 0 | 등 | 등/NNB | 175 | False |
 | 1 | 있다. | 있/VX 다/EF ./SF | 142 | True |
@@ -305,8 +305,8 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
     from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
     from sejong_corpus_cleaner.simplifier import eojeol_morphtag_sentence_to_lr
 
-    eps = EojeolMorphtagSentence('../data/clean/eojeol_morphtag_written.txt')
-    for sent in eps:
+    ems = EojeolMorphtagSentence('../data/clean/eojeol_morphtag_written.txt')
+    for sent in ems:
         sent_ = eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True)
 
 ## Requirements

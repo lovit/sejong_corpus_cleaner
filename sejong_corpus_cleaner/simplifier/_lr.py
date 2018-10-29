@@ -8,20 +8,21 @@ from .. import compose
 from .. import decompose
 
 
-def remove_symbol(eojeol, morphtag):
-    symbols = {pos[0] for pos in morphtag if pos[1][0] == 'S'}
+def remove_symbol(eojeol, morphtags):
+    symbols = {morph for morph, tag in morphtags if tag[0] == 'S'}
     for s in symbols:
         eojeol = eojeol.replace(s, '')
-    morphtag = [pos for pos in morphtag if (not pos[1][0] == 'S') and (not '(' in pos[0])]
-    return eojeol, morphtag
+    morphtags = [(morph, tag) for morph, tag in morphtags
+                 if (not tag[0] == 'S') and (not '(' in morph)]
+    return eojeol, morphtags
 
 def eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True):
     try:
         sent_ = []
-        for eojeol, morphtag in sent:
-            if [w for w, t in morphtag if not w]:
+        for eojeol, morphtags in sent:
+            if [morph for morph, tag in morphtags if not morph]:
                 continue
-            lr = eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv)
+            lr = eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv)
             sent_.append(lr[0])
             if len(lr) == 2:
                 sent_.append(lr[1])
@@ -30,14 +31,14 @@ def eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True):
         message = str(e) + '\n' + '{}'.format(sent)
         raise ValueError(message)
 
-def eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=True):
+def eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv=True):
 
-    eojeol, morphtag = remove_symbol(eojeol, morphtag)
+    eojeol, morphtags = remove_symbol(eojeol, morphtags)
 
     if eojeol in _hard_code:
         return _hard_code[eojeol]
 
-    return _eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv)
+    return _eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv)
 
 _hard_code = {
     '못지': ('못지', '', 'Adverb', ''),
@@ -46,24 +47,24 @@ _hard_code = {
     '짝짝짝두': ('짝짝짝', '두', 'Noun', 'Josa'),
 }
 
-def _eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=True):
-    if not eojeol or not morphtag:
+def _eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv=True):
+    if not eojeol or not morphtags:
         return (('', '', '', ''), )
 
-    first_tag = to_simple_tag(morphtag[0][1])
+    first_tag = to_simple_tag(morphtags[0][1])
     if first_tag == 'Josa' or first_tag == 'Eomi':
         return ((eojeol, '', first_tag, ''), )
 
     # 일/NR + 년NNG
-    last_tag = to_simple_tag(morphtag[-1][1])
+    last_tag = to_simple_tag(morphtags[-1][1])
     if last_tag == 'Noun':
         return ((eojeol, '', 'Noun', ''), )
 
     if len(morphtag) == 1:
-        return ((eojeol, '', to_simple_tag(morphtag[0][1]), ''), )
+        return ((eojeol, '', to_simple_tag(morphtags[0][1]), ''), )
 
     if len(morphtag) == 2:
-        return (reformat(eojeol, morphtag, 0, first_tag), )
+        return (reformat(eojeol, morphtags, 0, first_tag), )
 
     # XSV (동사형 파생 접미사), XSA: 형용사형 파생 접미사 -> 독립어절
     # 생각했어요-> (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
@@ -71,86 +72,86 @@ def _eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=True):
     # 생각하다-> (('생각', '', 'Noun', ''), ('하', '다', 'Verb', 'Eomi'))
     #   [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')]
     for tag in 'XSV XSA VCP VCN'.split():
-        tag_i = last_tag_index(morphtag, tag, use_simple=False)
-        if tag_i > 0 and to_simple_tag(morphtag[tag_i-1][1]) == 'Noun':
+        tag_i = last_tag_index(morphtags, tag, use_simple=False)
+        if tag_i > 0 and to_simple_tag(morphtags[tag_i-1][1]) == 'Noun':
             if separate_xsv:
-                eojeol0 = ''.join(w for w, _ in morphtag[:tag_i])
+                eojeol0 = ''.join(w for w, _ in morphtags[:tag_i])
                 eojeol1 = eojeol[len(eojeol0):]
                 lr0 = (eojeol0, '', 'Noun', '')
-                lr1 = reformat(eojeol1, morphtag[tag_i:], 0, to_simple_tag(tag))
+                lr1 = reformat(eojeol1, morphtags[tag_i:], 0, to_simple_tag(tag))
                 return (lr0, lr1)
             else:
-                return (reformat(eojeol, morphtag, tag_i, to_simple_tag(tag)), )
+                return (reformat(eojeol, morphtags, tag_i, to_simple_tag(tag)), )
 
     for tag in 'Noun Pronoun Number Verb Adjective'.split():
-        tag_i = last_tag_index(morphtag, tag)
+        tag_i = last_tag_index(morphtags, tag)
         if tag_i >= 0:
             # 어쩌구 [['어찌', 'MAG'], ['하', 'XSV'], ['구', 'EC']]
-            if morphtag[tag_i] == ['하', 'XSV'] and to_simple_tag(morphtag[tag_i-1][1]) == 'Adverb':
-                l = ''.join(w for w, _ in morphtag[:tag_i+1])
-                r = ''.join(w for w, _ in morphtag[tag_i+1:])
+            if morphtags[tag_i] == ['하', 'XSV'] and to_simple_tag(morphtags[tag_i-1][1]) == 'Adverb':
+                l = ''.join(w for w, _ in morphtags[:tag_i+1])
+                r = ''.join(w for w, _ in morphtags[tag_i+1:])
                 return l, r, tag, 'Eomi'
-            return (reformat(eojeol, morphtag, tag_i, tag), )
+            return (reformat(eojeol, morphtags, tag_i, tag), )
 
     # 지금/MAG + 도/JX
     # XX/UNC + 를/JKO
     # 그래/IC + 요/JX
     for tag in 'Adverb Unk Exclamation'.split():
-        tag_i = last_tag_index(morphtag, tag)
+        tag_i = last_tag_index(morphtags, tag)
         if (tag_i >= 0):
-            if tag_i + 1== len(morphtag):
+            if tag_i + 1== len(morphtags):
                 return ((eojeol, '', tag, ''), )
-            if ((to_simple_tag(morphtag[tag_i+1][1]) == 'Josa') or
-                (to_simple_tag(morphtag[tag_i+1][1]) == 'Eomi')
+            if ((to_simple_tag(morphtags[tag_i+1][1]) == 'Josa') or
+                (to_simple_tag(morphtags[tag_i+1][1]) == 'Eomi')
                ):
-                return (reformat(eojeol, morphtag, tag_i, 'Noun', 'Josa'), )
+                return (reformat(eojeol, morphtags, tag_i, 'Noun', 'Josa'), )
 
-    second_tag = to_simple_tag(morphtag[1][1])
+    second_tag = to_simple_tag(morphtags[1][1])
     if second_tag == 'Josa':
-        return (reformat(eojeol, morphtag, 0, 'Noun', 'Josa'), )
+        return (reformat(eojeol, morphtags, 0, 'Noun', 'Josa'), )
     raise ValueError('Exception: eojeol = {}, morphtag = {}'.format(eojeol, morphtag))
 
-def last_tag_index(morphtag, tag, use_simple=True):
+def last_tag_index(morphtags, tag, use_simple=True):
     last_index = -1
-    for i, (w, t) in enumerate(morphtag):
-        if use_simple and to_simple_tag(t) == tag:
+    for i, (morph, tag_) in enumerate(morphtags):
+        if use_simple and to_simple_tag(tag_) == tag:
             last_index = i
-        elif not use_simple and t == tag:
+        elif not use_simple and tag_ == tag:
             last_index = i
     return last_index
 
 def split_index(morphtag, index):
-    previous_subword = ''.join([remove_jamo(pos[0]) for pos in morphtag[:index+1]])
+    previous_subword = ''.join([remove_jamo(morph) for morph, tag in morphtag[:index+1]])
     return len(previous_subword)
 
-def remove_jamo(word):
-    return ''.join(c for c in word if not (is_jaum(c) or is_moum(c)))
+def remove_jamo(morph):
+    return ''.join(c for c in morph if not (is_jaum(c) or is_moum(c)))
 
-def reformat(eojeol, morphtag, tag_i, l_tag, r_tag_=None):
-    if tag_i == len(morphtag)-1:
+def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
+    if tag_i == len(morphtags)-1:
         return eojeol, '', l_tag, ''
 
     # 오고, [['들어오', 'VV'], ['고', 'EC']]
     # 맞이해, [['맞이하', 'VV'], ['여', 'EC']]
-    if len(morphtag) == 2 and is_hangle(morphtag[1][0][0]):
-        l, r = morphtag[0][0], morphtag[1][0]
-        l_tag = to_simple_tag(morphtag[0][1])
-        r_tag = to_simple_tag(morphtag[1][1])
+    if len(morphtags) == 2 and is_hangle(morphtags[1][0][0]):
+        l, r = morphtags[0][0], morphtags[1][0]
+        l_tag = to_simple_tag(morphtags[0][1])
+        r_tag = to_simple_tag(morphtags[1][1])
         return l, r, l_tag, r_tag
 
-    s_index = split_index(morphtag, tag_i)
+    s_index = split_index(morphtags, tag_i)
 
     l = eojeol[:s_index]
     r = eojeol[s_index:]
 
     # use last character of morphtag[tag_i]
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
-    l = l[:-1] +  morphtag[tag_i][0][-1]
+    l = l[:-1] +  morphtags[tag_i][0][-1]
 
-    first_word = morphtag[tag_i+1][0] # R parts 의 첫 단어
+    first_word = morphtags[tag_i+1][0] # R parts 의 첫 단어
     first_char = first_word[0]     # R parts 의 첫 글자
     second_char = '' if len(first_word) == 1 else first_word[1]      # R parts 의 두번째 글자
-    second_word = '' if tag_i+2 == len(morphtag) else morphtag[tag_i+2][0] # R parts 의 두번째 단어
+    second_word = '' if tag_i+2 == len(morphtags) else morphtags[tag_i+2][0] # R parts 의 두번째 단어
 
     # 보내 [['보내', 'VV'], ['ㅓ', 'EC']]
     # 돼요 [['되', 'VV'], ['ㅓ요', 'EF']]
@@ -188,7 +189,7 @@ def reformat(eojeol, morphtag, tag_i, l_tag, r_tag_=None):
     if l_tag == 'Noun':
         r_tag = 'Josa'
     else:
-        r_tag = to_simple_tag(morphtag[tag_i+1][1])
+        r_tag = to_simple_tag(morphtags[tag_i+1][1])
 
     if r_tag_ is not None:
         r_tag = r_tag_
