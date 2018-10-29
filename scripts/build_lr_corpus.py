@@ -8,25 +8,21 @@ from sejong_corpus_cleaner.processed_data import EojeolPosesSentence
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cleandata_directory', type=str, default='../data/clean/')
-    parser.add_argument('--spoken_input_filename', type=str, default='eojeol_poses_spoken.txt')
+    parser.add_argument('--colloquial_input_filename', type=str, default='eojeol_poses_colloquial.txt')
     parser.add_argument('--written_input_filename', type=str, default='eojeol_poses_written.txt')
     parser.add_argument('--separate_xsv', dest='separate_xsv', action='store_true')
 
     args = parser.parse_args()
     dirs = args.cleandata_directory
-    spoken_input = args.spoken_input_filename
+    colloquial_input = args.colloquial_input_filename
     written_input = args.written_input_filename
     separate_xsv = args.separate_xsv
 
     suffix = '_sepxsv' if separate_xsv else '_unsepxsv'
 
-    # log_path = '%s/lr_converting_error.txt' % (dirs)
-    # fe = open(log_path, 'w', encoding='utf-8')
-    # fe.write('# SPOKEN CORPUS\n')
-
-    input_path = '%s/%s' % (dirs, spoken_input)
-    corpus_path = '%s/lrcorpus_spoken%s.txt' % (dirs, suffix)
-    sentence_path = '%s/lrsentence_spoken.txt' % dirs
+    input_path = '%s/%s' % (dirs, colloquial_input)
+    corpus_path = '%s/lrcorpus_colloquial%s.txt' % (dirs, suffix)
+    sentence_path = '%s/lrsentence_colloquial.txt' % dirs
     with open(corpus_path, 'w', encoding='utf-8') as fc:
         with open(sentence_path, 'w', encoding='utf-8') as fs:
             create(input_path, corpus_path, sentence_path, fc, fs, separate_xsv)

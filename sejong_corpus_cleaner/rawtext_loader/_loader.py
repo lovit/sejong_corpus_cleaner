@@ -6,10 +6,10 @@ from .. import separate_word_tag
 from .. import separate_eojeol_poses
 from .. import unicode_sentence
 
-def load_texts_as_eojeol_poses(filepaths, encoding='utf-16', is_spoken=True):
+def load_texts_as_eojeol_poses(filepaths, encoding='utf-16', is_colloquial=True):
 
-    if is_spoken:
-        loader = load_spoken_text_as_eojeol_poses
+    if is_colloquial:
+        loader = load_colloquial_text_as_eojeol_poses
     else:
         loader = load_written_text_as_eojeol_poses
 
@@ -44,7 +44,7 @@ def load_written_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
 
     return sentences
 
-def load_spoken_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
+def load_colloquial_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -66,7 +66,7 @@ def load_spoken_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
     return sentences
 
 def unify_morphemes_separator(sent):
-    # because spoken & written have difference format
+    # because colloquial & written have difference format
     def unify(token):
         if not (' + ' in token):
             token = token.replace('+', ' + ')
@@ -90,9 +90,9 @@ def _is_right_form_of_sentence(sent):
             return False
     return True
 
-def load_texts_as_corpus(paths, is_spoken=True):
-    if is_spoken:
-        loader = load_spoken_text_as_eojeol_poses
+def load_texts_as_corpus(paths, is_colloquial=True):
+    if is_colloquial:
+        loader = load_colloquial_text_as_eojeol_poses
     else:
         loader = load_written_text_as_eojeol_poses
 
@@ -108,9 +108,9 @@ def load_texts_as_corpus(paths, is_spoken=True):
 
     return sentences_
 
-def load_texts_as_eojeol_poses_table(paths, is_spoken=True, return_as_dict=False):
-    if is_spoken:
-        loader = load_spoken_text_as_eojeol_poses
+def load_texts_as_eojeol_poses_table(paths, is_colloquial=True, return_as_dict=False):
+    if is_colloquial:
+        loader = load_colloquial_text_as_eojeol_poses
     else:
         loader = load_written_text_as_eojeol_poses
 
