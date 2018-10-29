@@ -3,7 +3,7 @@ from glob import glob
 
 import sys
 sys.path.insert(0, '../')
-from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtag
+from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtags
 
 def main():
     parser = argparse.ArgumentParser()
@@ -24,7 +24,7 @@ def main():
 
 def create(input_paths, output_path, is_colloquial):
     print('with %d texts' % len(input_paths))
-    eojeol_morphtag = load_texts_as_eojeol_morphtag(input_paths, is_colloquial=is_colloquial)
+    eojeol_morphtag = load_texts_as_eojeol_morphtags(input_paths, is_colloquial=is_colloquial)
     with open(output_path, 'w', encoding='utf-8') as f:
         for sent in eojeol_morphtag:
             f.write('%s\n\n' % sent)

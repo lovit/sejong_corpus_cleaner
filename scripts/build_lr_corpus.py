@@ -2,7 +2,7 @@ import argparse
 
 import sys
 sys.path.insert(0, '../')
-from sejong_corpus_cleaner.simplifier import eojeol_morphtag_sentence_to_lr
+from sejong_corpus_cleaner.simplifier import eojeol_morphtags_sentence_to_lr
 from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
 
 def main():
@@ -53,7 +53,7 @@ def create(input_path, corpus_path, sentence_path, fc, fs, separate_xsv):
             print('\rbuilding %d sents' % i, end='', flush=True)
 
         try:
-            sent_ = eojeol_morphtag_sentence_to_lr(sent, separate_xsv)
+            sent_ = eojeol_morphtags_sentence_to_lr(sent, separate_xsv)
 
             eojeol_strfs = [eojeol_to_strf(l, r, l_tag, r_tag) for l, r, l_tag, r_tag in sent_]
             for eojeol_strf in eojeol_strfs:

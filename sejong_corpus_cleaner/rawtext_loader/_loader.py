@@ -2,23 +2,23 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 from pandas import DataFrame
 
-from .. import separate_word_tag
+from .. import separate_morph_tag
 from .. import separate_eojeol_morphtag
 from .. import unicode_sentence
 
-def load_texts_as_eojeol_morphtag(filepaths, encoding='utf-16', is_colloquial=True):
+def load_texts_as_eojeol_morphtags(filepaths, encoding='utf-16', is_colloquial=True):
 
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_morphtag
+        loader = load_colloquial_text_as_eojeol_morphtags
     else:
-        loader = load_written_text_as_eojeol_morphtag
+        loader = load_written_text_as_eojeol_morphtags
 
     sentences = []
     for path in filepaths:
         sentences += loader(path, encoding)
     return sentences
 
-def load_written_text_as_eojeol_morphtag(filepath, encoding='utf-16', header=None):
+def load_written_text_as_eojeol_morphtags(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -44,7 +44,7 @@ def load_written_text_as_eojeol_morphtag(filepath, encoding='utf-16', header=Non
 
     return sentences
 
-def load_colloquial_text_as_eojeol_morphtag(filepath, encoding='utf-16', header=None):
+def load_colloquial_text_as_eojeol_morphtags(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -108,11 +108,11 @@ def load_texts_as_corpus(paths, is_colloquial=True):
 
     return sentences_
 
-def load_texts_as_eojeol_morphtag_table(paths, is_colloquial=True, return_as_dict=False):
+def load_texts_as_eojeol_morphtags_table(paths, is_colloquial=True, return_as_dict=False):
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_morphtag
+        loader = load_colloquial_text_as_eojeol_morphtags
     else:
-        loader = load_written_text_as_eojeol_morphtag
+        loader = load_written_text_as_eojeol_morphtags
 
     counter = defaultdict(int)
     for path in paths:

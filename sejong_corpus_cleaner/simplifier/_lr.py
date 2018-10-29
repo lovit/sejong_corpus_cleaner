@@ -16,13 +16,13 @@ def remove_symbol(eojeol, morphtags):
                  if (not tag[0] == 'S') and (not '(' in morph)]
     return eojeol, morphtags
 
-def eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True):
+def eojeol_morphtags_sentence_to_lr(sent, separate_xsv=True):
     try:
         sent_ = []
         for eojeol, morphtags in sent:
             if [morph for morph, tag in morphtags if not morph]:
                 continue
-            lr = eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv)
+            lr = eojeol_morphtags_to_lr(eojeol, morphtags, separate_xsv)
             sent_.append(lr[0])
             if len(lr) == 2:
                 sent_.append(lr[1])
@@ -31,14 +31,14 @@ def eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True):
         message = str(e) + '\n' + '{}'.format(sent)
         raise ValueError(message)
 
-def eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv=True):
+def eojeol_morphtags_to_lr(eojeol, morphtags, separate_xsv=True):
 
     eojeol, morphtags = remove_symbol(eojeol, morphtags)
 
     if eojeol in _hard_code:
         return _hard_code[eojeol]
 
-    return _eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv)
+    return _eojeol_morphtags_to_lr(eojeol, morphtags, separate_xsv)
 
 _hard_code = {
     '못지': ('못지', '', 'Adverb', ''),
@@ -47,7 +47,7 @@ _hard_code = {
     '짝짝짝두': ('짝짝짝', '두', 'Noun', 'Josa'),
 }
 
-def _eojeol_morphtag_to_lr(eojeol, morphtags, separate_xsv=True):
+def _eojeol_morphtags_to_lr(eojeol, morphtags, separate_xsv=True):
     if not eojeol or not morphtags:
         return (('', '', '', ''), )
 
