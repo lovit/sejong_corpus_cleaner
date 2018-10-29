@@ -3,22 +3,22 @@ from bs4 import BeautifulSoup
 from pandas import DataFrame
 
 from .. import separate_word_tag
-from .. import separate_eojeol_poses
+from .. import separate_eojeol_morphtag
 from .. import unicode_sentence
 
-def load_texts_as_eojeol_poses(filepaths, encoding='utf-16', is_colloquial=True):
+def load_texts_as_eojeol_morphtag(filepaths, encoding='utf-16', is_colloquial=True):
 
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_poses
+        loader = load_colloquial_text_as_eojeol_morphtag
     else:
-        loader = load_written_text_as_eojeol_poses
+        loader = load_written_text_as_eojeol_morphtag
 
     sentences = []
     for path in filepaths:
         sentences += loader(path, encoding)
     return sentences
 
-def load_written_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
+def load_written_text_as_eojeol_morphtag(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -44,7 +44,7 @@ def load_written_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
 
     return sentences
 
-def load_colloquial_text_as_eojeol_poses(filepath, encoding='utf-16', header=None):
+def load_colloquial_text_as_eojeol_morphtag(filepath, encoding='utf-16', header=None):
 
     if not header:
         header = filepath.split('/')[-1][:-4]
@@ -92,35 +92,35 @@ def _is_right_form_of_sentence(sent):
 
 def load_texts_as_corpus(paths, is_colloquial=True):
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_poses
+        loader = load_colloquial_text_as_eojeol_morphtag
     else:
-        loader = load_written_text_as_eojeol_poses
+        loader = load_written_text_as_eojeol_morphtag
 
-    def sent_to_poses(sent):
+    def sent_to_morphtag(sent):
         return [pos for token in sent.split('\n')
-                    for pos in separate_eojeol_poses(token)[1]]
+                    for pos in separate_eojeol_morphtag(token)[1]]
 
     sentences_ = []
     for path in paths:
         sentences = loader(path)
-        sentences = [sent_to_poses(sent) for sent in sentences]
+        sentences = [sent_to_morphtag(sent) for sent in sentences]
         sentences_ += sentences
 
     return sentences_
 
-def load_texts_as_eojeol_poses_table(paths, is_colloquial=True, return_as_dict=False):
+def load_texts_as_eojeol_morphtag_table(paths, is_colloquial=True, return_as_dict=False):
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_poses
+        loader = load_colloquial_text_as_eojeol_morphtag
     else:
-        loader = load_written_text_as_eojeol_poses
+        loader = load_written_text_as_eojeol_morphtag
 
     counter = defaultdict(int)
     for path in paths:
         sentences = loader(path)
         for sent in sentences:
-            for eojeol_poses in sent.split('\n'):
+            for eojeol_morphtag in sent.split('\n'):
                 try:
-                    eojeol, morphemes = eojeol_poses.split('\t')
+                    eojeol, morphemes = eojeol_morphtag.split('\t')
                     morphemes = morphemes.replace(' + ', ' ')
                     counter[(eojeol, morphemes)] += 1
                 except:

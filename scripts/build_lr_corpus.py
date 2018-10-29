@@ -2,14 +2,14 @@ import argparse
 
 import sys
 sys.path.insert(0, '../')
-from sejong_corpus_cleaner.simplifier import eojeol_poses_sentence_to_lr
-from sejong_corpus_cleaner.processed_data import EojeolPosesSentence
+from sejong_corpus_cleaner.simplifier import eojeol_morphtag_sentence_to_lr
+from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cleandata_directory', type=str, default='../data/clean/')
-    parser.add_argument('--colloquial_input_filename', type=str, default='eojeol_poses_colloquial.txt')
-    parser.add_argument('--written_input_filename', type=str, default='eojeol_poses_written.txt')
+    parser.add_argument('--colloquial_input_filename', type=str, default='eojeol_morphtag_colloquial.txt')
+    parser.add_argument('--written_input_filename', type=str, default='eojeol_morphtag_written.txt')
     parser.add_argument('--separate_xsv', dest='separate_xsv', action='store_true')
 
     args = parser.parse_args()
@@ -45,7 +45,7 @@ def create(input_path, corpus_path, sentence_path, fc, fs, separate_xsv):
             return '%s/%s' % (l, l_tag)
         return '%s/%s %s/%s' % (l, l_tag, r, r_tag)
 
-    eps = EojeolPosesSentence(input_path)
+    eps = EojeolMorphtagSentence(input_path)
     n_exceptions = 0
 
     for i, sent in enumerate(eps):
@@ -53,7 +53,7 @@ def create(input_path, corpus_path, sentence_path, fc, fs, separate_xsv):
             print('\rbuilding %d sents' % i, end='', flush=True)
 
         try:
-            sent_ = eojeol_poses_sentence_to_lr(sent, separate_xsv)
+            sent_ = eojeol_morphtag_sentence_to_lr(sent, separate_xsv)
 
             eojeol_strfs = [eojeol_to_strf(l, r, l_tag, r_tag) for l, r, l_tag, r_tag in sent_]
             for eojeol_strf in eojeol_strfs:

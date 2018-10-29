@@ -63,4 +63,4 @@ def to_simple_tag(tag):
     return tagmap.get(tag, 'Unk')
 
 def to_simple_tag_sentence(sent):
-    return [(word, to_simple_tag(tag)) for word, tag in sent]
+    return [(morph, to_simple_tag(tag)) for morph, tag in sent]

@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from sejong_corpus_cleaner.simplifier import eojeol_poses_to_lr
+from sejong_corpus_cleaner.simplifier import eojeol_morphtag_to_lr
 
 def main():
     test_sets = [
@@ -38,13 +38,13 @@ def main():
         ('생각하다', [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')], '')
     ]
 
-    for eojeol, poses, tag in test_sets:
-        result0 = eojeol_poses_to_lr(eojeol, poses, separate_xsv=False)
-        result1 = eojeol_poses_to_lr(eojeol, poses)
+    for eojeol, morphtag, tag in test_sets:
+        result0 = eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=False)
+        result1 = eojeol_morphtag_to_lr(eojeol, morphtag)
         if result0 == result1:
-            print('{}-> {}\nposes = {}'.format(eojeol, result0[0], poses), end='\n\n')
+            print('{}-> {}\nmorphtag = {}'.format(eojeol, result0[0], morphtag), end='\n\n')
         else:
-            print('{}-> {}, {}\nposes = {}'.format(eojeol, result0[0], result1, poses), end='\n\n')
+            print('{}-> {}, {}\nmorphtag = {}'.format(eojeol, result0[0], result1, morphtag), end='\n\n')
 
 if __name__ == '__main__':
     main()

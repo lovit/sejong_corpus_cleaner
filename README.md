@@ -48,13 +48,13 @@ README 의 예시 코드는 아래의 폴더 구조를 전제합니다. script �
 
 ### Loading raw texts as eojeol-morphemes
 
-세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. **load_colloquial_text_as_eojeol_poses** 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, **load_written_text_as_eojeol_poses** 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
+세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. **load_colloquial_text_as_eojeol_morphtag** 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, **load_written_text_as_eojeol_morphtag** 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
 
-    from sejong_corpus_cleaner.rawtext_loader import load_colloquial_text_as_eojeol_poses
-    from sejong_corpus_cleaner.rawtext_loader import load_written_text_as_eojeol_poses
+    from sejong_corpus_cleaner.rawtext_loader import load_colloquial_text_as_eojeol_morphtag
+    from sejong_corpus_cleaner.rawtext_loader import load_written_text_as_eojeol_morphtag
 
-    colloquial = load_colloquial_text_as_eojeol_poses('../data/raw/colloquial/5CT_0013.txt')
-    written = load_written_text_as_eojeol_poses('../data/raw/written/BTAA0001.txt')
+    colloquial = load_colloquial_text_as_eojeol_morphtag('../data/raw/colloquial/5CT_0013.txt')
+    written = load_written_text_as_eojeol_morphtag('../data/raw/written/BTAA0001.txt')
 
 list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기호인 '\n' 로 구분되어 있습니다. 각 어절은 '어절\t분석결과' 처럼 탭 (tap) 기호로 구분되어 있습니다.
 
@@ -78,16 +78,16 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
     디자이너로	디자이너/NNG + 로/JKB
     나섰다.	나서/VV + 었/EP + 다/EF + ./SF
 
-**load_texts_as_eojeol_poses** 함수는 여러 파일을 읽어 nested list 형식의 문장들을 return 합니다. 각 문장은 list of tuple 형식으로 [(단어, 품사), (단어, 품사), ... ] 형태입니다.  문어와 구어에 따라 is_colloquial 을 True, False 로 설정합니다.
+**load_texts_as_eojeol_morphtag** 함수는 여러 파일을 읽어 nested list 형식의 문장들을 return 합니다. 각 문장은 list of tuple 형식으로 [(단어, 품사), (단어, 품사), ... ] 형태입니다.  문어와 구어에 따라 is_colloquial 을 True, False 로 설정합니다.
 
     from glob import glob
-    from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_poses
+    from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtag
 
     paths = glob('../data/raw/colloquial/*.txt')
-    eojeol_poses = load_texts_as_eojeol_poses(paths, is_colloquial=True)
+    eojeol_morphtag = load_texts_as_eojeol_morphtag(paths, is_colloquial=True)
 
     paths = glob('../data/raw/written/*.txt')
-    eojeol_poses = load_texts_as_eojeol_poses(paths, is_colloquial=False)
+    eojeol_morphtag = load_texts_as_eojeol_morphtag(paths, is_colloquial=False)
 
 ### 세종 말뭉치의 품사 체계를 이용하는 형태소 분석용 데이터셋 만들기
 
@@ -114,12 +114,12 @@ list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기�
      ...
     ]
 
-**load_texts_as_eojeol_poses_table** 함수는 세종 말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_colloquial 을 다르게 설정해야 합니다.
+**load_texts_as_eojeol_morphtag_table** 함수는 세종 말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_colloquial 을 다르게 설정해야 합니다.
 
-    from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_poses_table
+    from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtag_table
 
     paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
-    table = load_texts_as_eojeol_poses_table(paths, is_colloquial=False)
+    table = load_texts_as_eojeol_morphtag_table(paths, is_colloquial=False)
 
 table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound 는 해당 어절이 두 개 이상의 형태소로 구성되어 있는지를 표시하는 column 이며, 각 형태소는 띄어쓰기로 구분됩니다.
 
@@ -281,33 +281,33 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
 
 위 변환을 위하여 다음의 함수가 이용됩니다.
 
-    from sejong_corpus_cleaner.simplifier import eojeol_poses_to_lr
+    from sejong_corpus_cleaner.simplifier import eojeol_morphtag_to_lr
 
     eojeol = '나눠져'
-    poses = [['나누', 'VV'], ['ㅓ', 'EC'], ['지', 'VX'], ['ㅓ', 'EC']]
+    morphtag = [['나누', 'VV'], ['ㅓ', 'EC'], ['지', 'VX'], ['ㅓ', 'EC']]
 
-    print(eojeol_poses_to_lr(eojeol, poses))
+    print(eojeol_morphtag_to_lr(eojeol, morphtag))
     # ('나눠지', '어', 'Verb', 'Eomi')
 
 
 어절 내 형태소들을 L-R 구조로 변형할 때, 명사 뒤에 위치하는 동사/형용사 전성 어미인 XSV/XSA 와 긍정/부정 지정사인 VCP/VCN 은 명사와 함께 하나의 L 로 볼 수도 있고, 독립된 L 로 볼 수 도 있습니다. 이는 사용자 패러매터로 조절할 수 있습니다. separate_xsv 의 기본값은 True 입니다. '생각했어요'는 '생각하/Verb + 았어요/Eomi' 로 볼 수도 있으며, '생각/Noun + 하/Verb + 았어요/Eomi' 로 볼 수도 있습니다. L-R 은 한 어절에 L 과 R 의 성분이 있다고 가정하므로 후자의 경우는 '(생각/Noun, L), (하/Verb, L), (았어요/Eomi, R)' 로 표현됩니다.
 
     eojeol = '생각했어요'
-    poses = [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
-    eojeol_poses_to_lr(eojeol, poses, separate_xsv=True)
+    morphtag = [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
+    eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=True)
     # (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
 
-    eojeol_poses_to_lr(eojeol, poses, separate_xsv=False)
+    eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=False)
     # ('생각하', '았어요', 'Verb', 'Eomi')
 
 하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다. 이때에도 separate_xsv 패러매터를 입력할 수 있습니다. 기본값은 True 입니다.
 
-    from sejong_corpus_cleaner.processed_data import EojeolPosesSentence
-    from sejong_corpus_cleaner.simplifier import eojeol_poses_sentence_to_lr
+    from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
+    from sejong_corpus_cleaner.simplifier import eojeol_morphtag_sentence_to_lr
 
-    eps = EojeolPosesSentence('../data/clean/eojeol_poses_written.txt')
+    eps = EojeolMorphtagSentence('../data/clean/eojeol_morphtag_written.txt')
     for sent in eps:
-        sent_ = eojeol_poses_sentence_to_lr(sent, separate_xsv=True)
+        sent_ = eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True)
 
 ## Requirements
 

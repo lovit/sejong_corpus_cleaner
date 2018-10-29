@@ -3,7 +3,7 @@ from glob import glob
 
 import sys
 sys.path.insert(0, '../')
-from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_poses_table
+from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtag_table
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,16 +15,16 @@ def main():
     cleandata_directory = args.cleandata_directory
 
     input_paths = sorted(glob('%s/colloquial/*.txt' % rawdata_directory))
-    output_path = '%s/eojeol_poses_table_colloquial.txt' % cleandata_directory
+    output_path = '%s/eojeol_morphtag_table_colloquial.txt' % cleandata_directory
     create(input_paths, output_path, is_colloquial=True)
 
     input_paths = sorted(glob('%s/written/*.txt' % rawdata_directory))
-    output_path = '%s/eojeol_poses_table_written.txt' % cleandata_directory
+    output_path = '%s/eojeol_morphtag_table_written.txt' % cleandata_directory
     create(input_paths, output_path, is_colloquial=False)
 
 def create(input_paths, output_path, is_colloquial):
     print('with %d texts' % len(input_paths))
-    table = load_texts_as_eojeol_poses_table(input_paths, is_colloquial=is_colloquial)
+    table = load_texts_as_eojeol_morphtag_table(input_paths, is_colloquial=is_colloquial)
     table.to_csv(output_path)
     print('result in %s' % output_path, end='\n\n')
 
