@@ -303,11 +303,11 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
 하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다. 이때에도 separate_xsv 패러매터를 입력할 수 있습니다. 기본값은 True 입니다.
 
     from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
-    from sejong_corpus_cleaner.simplifier import eojeol_morphtag_sentence_to_lr
+    from sejong_corpus_cleaner.simplifier import eojeol_morphtags_sentence_to_lr
 
     ems = EojeolMorphtagSentence('../data/clean/eojeol_morphtag_written.txt')
     for sent in ems:
-        sent_ = eojeol_morphtag_sentence_to_lr(sent, separate_xsv=True)
+        sent_ = eojeol_morphtags_sentence_to_lr(sent, separate_xsv=True)
 
 ## Requirements
 

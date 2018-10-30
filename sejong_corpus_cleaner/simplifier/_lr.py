@@ -17,6 +17,14 @@ def remove_symbol(eojeol, morphtags):
     return eojeol, morphtags
 
 def eojeol_morphtags_sentence_to_lr(sent, separate_xsv=True):
+
+    def format_check(lr):
+        if not lr[0] or not lr[2]:
+            return False
+        if (lr[1] and not lr[3]) or (not lr[1] and lr[3]):
+            return False
+        return True
+
     try:
         sent_ = []
         for eojeol, morphtags in sent:
@@ -26,6 +34,8 @@ def eojeol_morphtags_sentence_to_lr(sent, separate_xsv=True):
             sent_.append(lr[0])
             if len(lr) == 2:
                 sent_.append(lr[1])
+        # (l_word, r_word, l_tag, r_tag)
+        sent_ = [lr for lr in sent_ if format_check(lr)]
         return sent_
     except Exception as e:
         message = str(e) + '\n' + '{}'.format(sent)
@@ -60,10 +70,10 @@ def _eojeol_morphtags_to_lr(eojeol, morphtags, separate_xsv=True):
     if last_tag == 'Noun':
         return ((eojeol, '', 'Noun', ''), )
 
-    if len(morphtag) == 1:
+    if len(morphtags) == 1:
         return ((eojeol, '', to_simple_tag(morphtags[0][1]), ''), )
 
-    if len(morphtag) == 2:
+    if len(morphtags) == 2:
         return (reformat(eojeol, morphtags, 0, first_tag), )
 
     # XSV (동사형 파생 접미사), XSA: 형용사형 파생 접미사 -> 독립어절
