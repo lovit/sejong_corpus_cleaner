@@ -304,12 +304,12 @@ soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 �
 위 변환을 위하여 다음의 함수가 이용됩니다.
 
 ```python
-from sejong_corpus_cleaner.simplifier import eojeol_morphtag_to_lr
+from sejong_corpus_cleaner.simplifier import eojeol_morphtags_to_lr
 
 eojeol = '나눠져'
 morphtag = [['나누', 'VV'], ['ㅓ', 'EC'], ['지', 'VX'], ['ㅓ', 'EC']]
 
-print(eojeol_morphtag_to_lr(eojeol, morphtag))
+print(eojeol_morphtags_to_lr(eojeol, morphtag))
 # ('나눠지', '어', 'Verb', 'Eomi')
 ```
 
@@ -318,10 +318,10 @@ print(eojeol_morphtag_to_lr(eojeol, morphtag))
 ```python
 eojeol = '생각했어요'
 morphtag = [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
-eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=True)
+eojeol_morphtags_to_lr(eojeol, morphtag, separate_xsv=True)
 # (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
 
-eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=False)
+eojeol_morphtags_to_lr(eojeol, morphtag, separate_xsv=False)
 # ('생각하', '았어요', 'Verb', 'Eomi')
 ```
 
