@@ -154,14 +154,32 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
     l = eojeol[:s_index]
     r = eojeol[s_index:]
 
+    """
+    print('eojeol: %s'%eojeol)
+    print('morphtags: {}'.format(morphtags))
+    print('tag_i: {}'.format(tag_i))
+    print('l_tag: {}'.format(l_tag))
+    """
+
     # use last character of morphtag[tag_i]
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
     l = l[:-1] +  morphtags[tag_i][0][-1]
+
+    """
+    print('modified l = {}'.format(l))
+    """
 
     first_word = morphtags[tag_i+1][0] # R parts 의 첫 단어
     first_char = first_word[0]     # R parts 의 첫 글자
     second_char = '' if len(first_word) == 1 else first_word[1]      # R parts 의 두번째 글자
     second_word = '' if tag_i+2 == len(morphtags) else morphtags[tag_i+2][0] # R parts 의 두번째 단어
+
+    """
+    print('first_word: {}'.format(first_word))
+    print('first_char: {}'.format(first_char))
+    print('second_char: {}'.format(second_char))
+    print('second_word: {}'.format(second_word))
+    """
 
     # 보내 [['보내', 'VV'], ['ㅓ', 'EC']]
     # 돼요 [['되', 'VV'], ['ㅓ요', 'EF']]
@@ -171,7 +189,7 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
                 r = first_char + r
             elif is_moum(first_char):
                 r = compose('ㅇ', first_char, ' ') + r
-        elif len(first_word) == 2:
+        elif len(first_word) >= 2:
             if is_jaum(first_char) and is_moum(second_char):
                 r = compose(first_char, second_char, ' ') + r
             elif is_moum(first_char) and is_jaum(second_char):
