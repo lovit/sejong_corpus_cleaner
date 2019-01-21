@@ -130,7 +130,15 @@ def last_tag_index(morphtags, tag, use_simple=True):
             last_index = i
     return last_index
 
-def split_index(morphtag, index):
+def split_index(eojeol, morphtag, index, tag):
+    compound = False
+    if tag == 'Verb' or tag == 'Adjective' and index > 0:
+        for _, t in morphtag[:index]:
+            if t == 'VV' or t == 'VA':
+                compound = True
+    if compound:
+        following_subword = ''.join([remove_jamo(morph) for morph, tag in morphtag[index+1:]])
+        return len(eojeol) - len(following_subword)
     previous_subword = ''.join([remove_jamo(morph) for morph, tag in morphtag[:index+1]])
     return len(previous_subword)
 
@@ -149,13 +157,14 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
         r_tag = to_simple_tag(morphtags[1][1])
         return l, r, l_tag, r_tag
 
-    s_index = split_index(morphtags, tag_i)
+    s_index = split_index(eojeol, morphtags, tag_i, l_tag)
 
     l = eojeol[:s_index]
     r = eojeol[s_index:]
 
     """
     print('eojeol: %s'%eojeol)
+    print('s_index: {}'.format(s_index))
     print('morphtags: {}'.format(morphtags))
     print('tag_i: {}'.format(tag_i))
     print('l_tag: {}'.format(l_tag))
@@ -167,6 +176,7 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
 
     """
     print('modified l = {}'.format(l))
+    print('original r = {}'.format(r))
     """
 
     first_word = morphtags[tag_i+1][0] # R parts 의 첫 단어
@@ -181,31 +191,6 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
     print('second_word: {}'.format(second_word))
     """
 
-    # 보내 [['보내', 'VV'], ['ㅓ', 'EC']]
-    # 돼요 [['되', 'VV'], ['ㅓ요', 'EF']]
-    if not is_hangle(first_char):
-        if len(first_word) == 1:
-            if is_jaum(first_char):
-                r = first_char + r
-            elif is_moum(first_char):
-                r = compose('ㅇ', first_char, ' ') + r
-        elif len(first_word) >= 2:
-            if is_jaum(first_char) and is_moum(second_char):
-                r = compose(first_char, second_char, ' ') + r
-            elif is_moum(first_char) and is_jaum(second_char):
-                r = compose('ㅇ', first_char, second_char) + r
-            elif is_moum(first_char) and is_hangle(second_char):
-                r = compose('ㅇ', first_char, ' ') + r
-            elif is_jaum(first_char) and is_hangle(second_char):
-                r = first_char + r
-            else:
-                raise ValueError('reformat: check pos : tag_i = {}, morphtag = {}'.format(tag_i, morphtag))
-
-    # 했어요 [['하', 'VV'], ['았', 'EP'], ['어요', 'EF']]
-    # 예외적인, [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']]
-    elif r and (r[0] != first_char) and second_word and is_hangle(second_word[0]):
-        r = first_char + r
-
     if (l_tag == 'Verb' or l_tag == 'Adjective'):
         # 다해, [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']]
         if not r:
@@ -213,6 +198,25 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
         # 통해서, [['통하', 'VV'], ['ㅕ서', 'EC']]
         elif l[-1] == '하' and r[0] == '여':
             r = '아' + r[1:]
+        else:
+            rconcat = ''.join(m for m, t in morphtags[tag_i+1:])
+            rsubword = eojeol[len(l):]
+            # 예외적인, [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']]
+            if is_jaum(first_char):
+                r = first_char + rsubword
+            # 느꼈으니, [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']]
+            elif rsubword == rconcat[1:]:
+                r = rconcat[0] + rsubword
+            # 거셨을, [('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')]
+            elif rsubword[1:] == rconcat[2:]:
+                r = rconcat[:2] + rsubword[1:]
+            # ('반가우면서도', [['반갑', 'VA'], ['면서', 'EC'], ['도', 'JX']]),
+            elif rsubword[1:] == rconcat:
+                r = rsubword[0] + rconcat
+            else:
+                r = morphtags[tag_i+1][0][0] + rsubword[1:]
+        if is_moum(r[0]):
+            r = compose('ㅇ', r[0], ' ') + r[1:]
 
     if l_tag == 'Noun':
         r_tag = 'Josa'
