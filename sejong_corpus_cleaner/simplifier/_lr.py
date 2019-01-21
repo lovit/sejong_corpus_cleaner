@@ -162,29 +162,25 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
     l = eojeol[:s_index]
     r = eojeol[s_index:]
 
+    # use last character of morphtag[tag_i]
+    # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
+    l = l[:-1] +  morphtags[tag_i][0][-1]
+    
+    first_word = morphtags[tag_i+1][0] # R parts 의 첫 단어
+    first_char = first_word[0]     # R parts 의 첫 글자
+    second_char = '' if len(first_word) == 1 else first_word[1]      # R parts 의 두번째 글자
+    second_word = '' if tag_i+2 == len(morphtags) else morphtags[tag_i+2][0] # R parts 의 두번째 단어
+    rconcat = ''.join(m for m, t in morphtags[tag_i+1:])
+    rsubword = eojeol[len(l):]
+
     """
     print('eojeol: %s'%eojeol)
     print('s_index: {}'.format(s_index))
     print('morphtags: {}'.format(morphtags))
     print('tag_i: {}'.format(tag_i))
     print('l_tag: {}'.format(l_tag))
-    """
-
-    # use last character of morphtag[tag_i]
-    # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
-    l = l[:-1] +  morphtags[tag_i][0][-1]
-
-    """
     print('modified l = {}'.format(l))
     print('original r = {}'.format(r))
-    """
-
-    first_word = morphtags[tag_i+1][0] # R parts 의 첫 단어
-    first_char = first_word[0]     # R parts 의 첫 글자
-    second_char = '' if len(first_word) == 1 else first_word[1]      # R parts 의 두번째 글자
-    second_word = '' if tag_i+2 == len(morphtags) else morphtags[tag_i+2][0] # R parts 의 두번째 단어
-
-    """
     print('first_word: {}'.format(first_word))
     print('first_char: {}'.format(first_char))
     print('second_char: {}'.format(second_char))
@@ -199,8 +195,6 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
         elif l[-1] == '하' and r[0] == '여':
             r = '아' + r[1:]
         else:
-            rconcat = ''.join(m for m, t in morphtags[tag_i+1:])
-            rsubword = eojeol[len(l):]
             # 예외적인, [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']]
             if is_jaum(first_char):
                 r = first_char + rsubword
