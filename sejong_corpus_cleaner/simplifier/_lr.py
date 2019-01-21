@@ -209,8 +209,20 @@ def reformat(eojeol, morphtags, tag_i, l_tag, r_tag_=None):
                 r = rsubword[0] + rconcat
             else:
                 r = morphtags[tag_i+1][0][0] + rsubword[1:]
-        if is_moum(r[0]):
-            r = compose('ㅇ', r[0], ' ') + r[1:]
+
+    # post-processing
+    if len(r) > 0 and is_moum(r[0]):
+        r = compose('ㅇ', r[0], ' ') + r[1:]
+    if len(r) > 1 and is_jaum(r[1]):
+        cjj = decompose(r[0])
+        r = compose(cjj[0], cjj[1], r[1]) + r[2:]
+    elif len(r) > 1 and (r[1] == '이' or r[1] == 'ㅣ'):
+        if is_hangle(r[0]):
+            cjj = decompose(r[0])
+            if cjj[1] == 'ㅣ' and cjj[2] == ' ':
+                r = r[0] + r[2:]
+    elif len(r) > 1 and is_moum(r[1]):
+        r = r[0] + compose('ㅇ', r[1], ' ') + r[2:]
 
     if l_tag == 'Noun':
         r_tag = 'Josa'
