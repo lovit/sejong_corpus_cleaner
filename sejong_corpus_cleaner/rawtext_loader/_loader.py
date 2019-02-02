@@ -92,9 +92,9 @@ def _is_right_form_of_sentence(sent):
 
 def load_texts_as_corpus(paths, is_colloquial=True):
     if is_colloquial:
-        loader = load_colloquial_text_as_eojeol_morphtag
+        loader = load_colloquial_text_as_eojeol_morphtags
     else:
-        loader = load_written_text_as_eojeol_morphtag
+        loader = load_written_text_as_eojeol_morphtags
 
     def sent_to_morphtag(sent):
         return [pos for token in sent.split('\n')
