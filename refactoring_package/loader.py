@@ -1,3 +1,4 @@
+from collections import namedtuple
 from bs4 import BeautifulSoup
 import os
 
@@ -5,6 +6,131 @@ from .utils import unicode_sentence
 
 
 sep = os.path.sep
+
+
+class MorphTag(namedtuple('MorphTag', 'morph tag')):
+    """
+    Attributes
+    ----------
+    morph : str
+        Morpheme
+    tag : str
+        Tag
+
+    Usage
+    -----
+        >>> morphtag = MorphTag('프랑스', 'NNP')
+        >>> print(morphtag)
+        $ 프랑스/NNP
+    """
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return '%s/%s' % (self.morph, self.tag)
+
+
+class Sentence:
+    """
+    Attributes
+    ----------
+    eojeols : list of str
+        List of eojeol
+    morphtags : list of list of MorphTag
+        Its length is same to tat of eojeols
+
+    Usage
+    -----
+        >>> eojeols = ('프랑스의',
+             '세계적인',
+             '의상',
+             '디자이너',
+             '엠마누엘',
+             '웅가로가',
+             '실내',
+             '장식용',
+             '직물',
+             '디자이너로',
+             '나섰다.')
+        >>> morphtags = [[프랑스/NNP, 의/JKG],
+             [세계/NNG, 적/XSN, 이/VCP, ㄴ/ETM],
+             [의상/NNG],
+             [디자이너/NNG],
+             [엠마누엘/NNP],
+             [웅가로/NNP, 가/JKS],
+             [실내/NNG],
+             [장식/NNG, 용/XSN],
+             [직물/NNG],
+             [디자이너/NNG, 로/JKB],
+             [나서/VV, 었/EP, 다/EF, ./SF]] # Each item is list of MorphTag
+
+        >>> sentence = Sentence(eojeols, morphtags)
+        >>> len(sentence)
+        $ 11
+
+        >>> sentence[1]
+        $ ('세계적인', [세계/NNG, 적/XSN, 이/VCP, ㄴ/ETM])
+
+        >>> print(sentence)
+        $ 프랑스의	프랑스/NNP + 의/JKG
+          세계적인	세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM
+          의상 	 의상/NNG
+          디자이너	디자이너/NNG
+          엠마누엘	엠마누엘/NNP
+          웅가로가	웅가로/NNP + 가/JKS
+          실내	 실내/NNG
+          장식용	장식/NNG + 용/XSN
+          직물	 직물/NNG
+          디자이너로	디자이너/NNG + 로/JKB
+          나섰다.	 나서/VV + 었/EP + 다/EF + ./SF
+
+        >>> sentence.get_morphtags()
+        $ [[프랑스/NNP, 의/JKG],
+           [세계/NNG, 적/XSN, 이/VCP, ㄴ/ETM],
+           ...
+
+        >>> sentence.get_morphtags(flatten=True)
+        $ [프랑스/NNP,
+           의/JKG,
+           세계/NNG,
+           적/XSN,
+           이/VCP,
+           ㄴ/ETM,
+           ...
+    """
+    def __init__(self, list_of_eojeol, list_of_morphtags):
+
+        assert len(list_of_eojeol) == len(list_of_morphtags)
+
+        def exist_empty_item(seq):
+            return len([item for item in seq if len(item) == 0]) > 0
+
+        if exist_empty_item(list_of_eojeol) or exist_empty_item(list_of_morphtags):
+            raise ValueError('Exist empty item in sequence')
+
+        self.eojeols = list_of_eojeol
+        self.morphtags = list_of_morphtags
+
+    def __len__(self):
+        return len(self.eojeols)
+
+    def __getitem__(self, index):
+        return self.eojeols[index], self.morphtags[index]
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        morphtags_strf = [' + '.join(str(mt) for mt in mts) for mts in self.morphtags]
+        strf = '\n'.join(
+            '%s\t%s' % (eojeol, morphtags) for eojeol, morphtags in zip(self.eojeols, morphtags_strf))
+        return strf
+
+    def get_morphtags(self, flatten=False):
+        if not flatten:
+            return self.morphtags
+        return [mt for mts in self.morphtags for mt in mts]
+
 
 def extract_sentences(path):
     """
