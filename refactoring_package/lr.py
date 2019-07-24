@@ -69,6 +69,8 @@ def preprocess(eojeol, morphtags):
     return eojeol_, morphtags_
 
 def rule_based_transform(eojeol, morphtags, rules=None):
+    if to_simple_tag(morphtags[-1].tag) == 'Noun':
+        return ((eojeol, 'Noun'), ('', ''))
     if rules is None:
         rules = _rules
     return rules.get(eojeol, (None, None))
