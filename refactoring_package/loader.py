@@ -190,7 +190,7 @@ def load_a_file(path, remain_not_exists=False, debug=False):
     sentences = [sent for sent in sentences if sent]
 
     n_errors = len(sentences)
-    sentences = [sent for sent in sentences if check_sentence(sent)]
+    sentences = [sent for sent in sentences if base_checker(sent)]
     sentences = [unify_morphemes_separator(sent) for sent in sentences]
 
     n_errors -= len(sentences)
@@ -280,7 +280,7 @@ def from_written(soup, path):
     sentences = [remove_header(sent).strip() for sent in sentences]
     return sentences
 
-def check_sentence(sent):
+def base_checker(sent):
     for eojeol in sent.split('\n'):
         # check "따라서\t따라서/Advecb"
         if eojeol.count('\t') != 1:
