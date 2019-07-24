@@ -38,6 +38,11 @@ def extract_sentences(path):
             명이	명/NNB + 이/JKS
             하는	하/VV + 는/ETM
             거야.	거/NNB + (이)/VCP + 야/EF + ./SF
+
+    Usage
+    -----
+        $ path = '../data/raw/written/BTAA0001.txt'
+        $ sents = extract_sentences(path)
     """
     soup = read_txt_as_soup(path)
 
