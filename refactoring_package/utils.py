@@ -11,16 +11,29 @@ def check_encoding(paths):
 
     Returns
     -------
+    encodings : list of str
+        File encoding information for each file
+
+    Usage
+    -----
+    With a file
+        >>> check_encoding('../data/raw/written/BTAA0001.txt')
+        $ ['../data/raw/written/BTAA0001.txt: text/html; charset=utf-16le']
+
+    With multiple files
+        >>> check_encoding(['../data/raw/written/BTAA0001.txt', '../data/raw/colloquial/5CT_0016.txt'])
+        $ ['../data/raw/written/BTAA0001.txt: text/html; charset=utf-16le',
+           '../data/raw/colloquial/5CT_0016.txt: text/plain; charset=utf-16le']
     """
     if isinstance(paths, str):
         paths = [paths]
 
     # OSX
     if os.environ['_system_name'] == 'OSX':
-        encodings = [subprocess.getstatusoutput("file -I %s" % path)[1] for path in list_of_paths]
+        encodings = [subprocess.getstatusoutput("file -I %s" % path)[1] for path in paths]
     # Ubuntu
     else:
-        encodings = [subprocess.getstatusoutput("file %s" % path)[1] for path in list_of_paths]
+        encodings = [subprocess.getstatusoutput("file %s" % path)[1] for path in paths]
     return encodings
 
 unicode_mapper = {
