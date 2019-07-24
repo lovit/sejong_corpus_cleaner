@@ -132,7 +132,7 @@ class Sentence:
         return [mt for mts in self.morphtags for mt in mts]
 
 
-def load_a_file(path, remain_not_exists=False):
+def load_a_file(path, remain_not_exists=False, debug=False):
     """
     Argument
     --------
@@ -140,6 +140,9 @@ def load_a_file(path, remain_not_exists=False):
         File path
     remain_not_exists : Boolean
         If True, it does not remove not-exsit morphemes
+        Default is False
+    debug : Boolean
+        If True, it shows exception case
         Default is False
 
     Returns
@@ -191,12 +194,18 @@ def load_a_file(path, remain_not_exists=False):
     sentences = [unify_morphemes_separator(sent) for sent in sentences]
 
     n_errors -= len(sentences)
+    if debug and n_errors > 0:
+        print("Found %d sentences having wrong or empty eojeols" % n_errors)
+
     sentences_ = []
-    for sent in sentences:
+    for i, sent in enumerate(sentences):
         try:
             sent = as_sentence_instance(sent, remain_not_exists)
             sentences_.append(sent)
-        except:
+        except Exception as e:
+            if debug:
+                print('\n\nException message = {}'.format(e))
+                print('sentence text : {}'.format(sent))
             n_errors += 1
     return sentences_, n_errors
 
