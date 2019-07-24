@@ -1,4 +1,11 @@
-def to_lr(eojeol, morphtags, xsv_as_verb=False):
+from ._lr_rules import _rules
+
+
+def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
+    l, r = rule_based_transform(eojeol, morphtags, rules=None)
+    if l is not None:
+        return l, r
+
     raise NotImplemented
 
 def preprocess(eojeol, morphtags):
@@ -47,3 +54,8 @@ def preprocess(eojeol, morphtags):
         else:
             morphtags_.append(morphtag)
     return eojeol_, morphtags_
+
+def rule_based_transform(eojeol, morphtags, rules=None):
+    if rules is None:
+        rules = _rules
+    return rules.get(eojeol, (None, None))
