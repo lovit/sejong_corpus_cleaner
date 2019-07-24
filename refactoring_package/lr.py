@@ -1,4 +1,5 @@
 from ._lr_rules import _rules
+from .simple_tag import to_simple_tag
 
 
 def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
@@ -8,6 +9,10 @@ def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
         raise ValueError('Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(eojeol, morphtags))
 
     l, r = rule_based_transform(eojeol, morphtags, rules=None)
+    if l is not None:
+        return l, r
+
+    l, r = shorter_than_2(morphtags)
     if l is not None:
         return l, r
 
@@ -64,3 +69,16 @@ def rule_based_transform(eojeol, morphtags, rules=None):
     if rules is None:
         rules = _rules
     return rules.get(eojeol, (None, None))
+
+def shorter_than_2(morphtags):
+    if len(morphtags) == 1:
+        m0 = morphtags[0].morph
+        t0 = to_simple_tag(morphtags[0].tag)
+        return ((m0, t0), ('', ''))
+    if len(morphtags) == 2:
+        m0 = morphtags[0].morph
+        t0 = to_simple_tag(morphtags[0].tag)
+        m1 = morphtags[1].morph
+        t1 = to_simple_tag(morphtags[1].tag)
+        return ((m0, t0), (m1, t1))
+    return None, None
