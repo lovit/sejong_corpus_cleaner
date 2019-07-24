@@ -132,16 +132,19 @@ class Sentence:
         return [mt for mts in self.morphtags for mt in mts]
 
 
-def extract_sentences(path):
+def load_a_file(path, remain_not_exists=False):
     """
     Argument
     --------
     path : str
         File path
+    remain_not_exists : Boolean
+        If True, it does not remove not-exsit morphemes
+        Default is False
 
     Returns
     -------
-    sentences : list of str
+    sentences : list of Sentence
         A item in list is tagged sentence.
         For example of written corpus at '../data/raw/written/BTAA0001.txt'
 
@@ -165,10 +168,13 @@ def extract_sentences(path):
             하는	하/VV + 는/ETM
             거야.	거/NNB + (이)/VCP + 야/EF + ./SF
 
+    n_errors : int
+        Number of failures for parsing text to Sentence
+
     Usage
     -----
         $ path = '../data/raw/written/BTAA0001.txt'
-        $ sents = extract_sentences(path)
+        $ sentences, n_errors = load_a_file(path)
     """
     soup = read_txt_as_soup(path)
 
@@ -179,9 +185,35 @@ def extract_sentences(path):
 
     sentences = [unicode_sentence(sent) for sent in sentences]
     sentences = [sent for sent in sentences if sent]
+
+    n_errors = len(sentences)
     sentences = [sent for sent in sentences if check_sentence(sent)]
     sentences = [unify_morphemes_separator(sent) for sent in sentences]
-    return sentences
+
+    n_errors -= len(sentences)
+    sentences_ = []
+    for sent in sentences:
+        try:
+            sent = as_sentence_instance(sent, remain_not_exists)
+            sentences_.append(sent)
+        except:
+            n_errors += 1
+    return sentences_, n_errors
+
+def as_sentence_instance(sent, remain_not_exists):
+    eojeol_morphtags = [e.split('\t') for e in sent.split('\n')]
+    eojeols, morphtags = zip(*eojeol_morphtags)
+    morphtags = [[mt.rsplit('/',1) for mt in mts.split(' + ')] for mts in morphtags]
+
+    # remove not exist morphemes
+    def exists(morphtag):
+        return not ('(' in morphtag[0] and ')' in morphtag[0])
+
+    if not remain_not_exists:
+        morphtags = [[mt for mt in mts if exists(mt)] for mts in morphtags]
+
+    morphtags = [[MorphTag(m,t) for m,t in mts] for mts in morphtags]
+    return Sentence(eojeols, morphtags)
 
 def is_colloquial_file(path):
     """
