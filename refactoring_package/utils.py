@@ -1,10 +1,27 @@
+import os
 import subprocess
 
 
-def check_encoding(list_of_paths):
-    list_of_encodings = [subprocess.getstatusoutput("file %s" % path)[1]
-        for path in list_of_paths]
-    return list_of_encodings
+def check_encoding(paths):
+    """
+    Argument
+    --------
+    paths : str or list of str
+        File path
+
+    Returns
+    -------
+    """
+    if isinstance(paths, str):
+        paths = [paths]
+
+    # OSX
+    if os.environ['_system_name'] == 'OSX':
+        encodings = [subprocess.getstatusoutput("file -I %s" % path)[1] for path in list_of_paths]
+    # Ubuntu
+    else:
+        encodings = [subprocess.getstatusoutput("file %s" % path)[1] for path in list_of_paths]
+    return encodings
 
 unicode_mapper = {
   'ᆨ': 'ㄱ', # 4520
