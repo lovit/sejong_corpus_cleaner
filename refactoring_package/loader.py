@@ -111,6 +111,10 @@ class Sentence:
         self.eojeols = list_of_eojeol
         self.morphtags = list_of_morphtags
 
+    def __iter__(self):
+        for eojeol, morphtags in zip(self.eojeols, self.morphtags):
+            yield eojeol, morphtags
+
     def __len__(self):
         return len(self.eojeols)
 
