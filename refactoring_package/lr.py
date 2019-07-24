@@ -11,11 +11,15 @@ def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
     if (not eojeol) or (not morphtags):
         raise ValueError('Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(eojeol, morphtags))
 
-    l, r = rule_based_transform(eojeol, morphtags, rules=None)
+    l, r = transform_with_rules(eojeol, morphtags, rules=None)
     if l is not None:
         return l, r
 
-    l, r = shorter_than_2(morphtags)
+    l, r = transform_with_short_morphtags(morphtags)
+    if l is not None:
+        return l, r
+
+    l, r = transform_when_pos_is_changed(eojeol, morphtags)
     if l is not None:
         return l, r
 
@@ -68,14 +72,14 @@ def preprocess(eojeol, morphtags):
             morphtags_.append(morphtag)
     return eojeol_, morphtags_
 
-def rule_based_transform(eojeol, morphtags, rules=None):
+def transform_with_rules(eojeol, morphtags, rules=None):
     if to_simple_tag(morphtags[-1].tag) == 'Noun':
         return ((eojeol, 'Noun'), ('', ''))
     if rules is None:
         rules = _rules
     return rules.get(eojeol, (None, None))
 
-def shorter_than_2(morphtags):
+def transform_with_short_morphtags(morphtags):
     if len(morphtags) == 1:
         m0 = morphtags[0].morph
         t0 = to_simple_tag(morphtags[0].tag)
@@ -87,3 +91,9 @@ def shorter_than_2(morphtags):
         t1 = to_simple_tag(morphtags[1].tag)
         return ((m0, t0), (m1, t1))
     return None, None
+
+def transform_when_pos_is_changed(eojeol, morphtags):
+    """
+    XSV, XSA, VCP, VCN 과 같은 전성어미가 존재하는 경우
+    """
+    raise NotImplemented
