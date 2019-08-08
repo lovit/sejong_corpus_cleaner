@@ -7,7 +7,7 @@ def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
     lr_morphemes = morphtags_to_lr(eojeol, morphtags, xsv_as_verb, rules)
     return None
 
-def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
+def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
 
     eojeol, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
@@ -24,7 +24,7 @@ def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
     tags = [mt.tag for  mt in morphtags]
     simple_tags = [to_simple_tag(tag) for tag in tags]
 
-    l, r = transform_with_short_morphtags(eojeol, morphs, tags, simple_tags)
+    l, r = transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug)
     if l is not None:
         return l, r
 
@@ -36,10 +36,16 @@ def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
     if l is not None:
         return l, r
 
-    l, r = basic(eojeol, morphs, tags, simple_tags)
+    l, r = transform_normal_case(eojeol, morphs, tags, simple_tags, debug)
     if l is not None:
         return l, r
-#     raise NotImplemented
+
+    l, r = transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug)
+    if l is not None:
+        return l, r
+
+    message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
+    raise ValueError(message)
 
 def preprocess(eojeol, morphtags):
     """
@@ -86,7 +92,6 @@ def preprocess(eojeol, morphtags):
             eojeol_ = eojeol_.replace(morphtag.morph, '', 1)
         else:
             morphtags_.append(morphtag)
-    # TODO: 용언이 두 개가 넘개 존재하는 경우는 띄어쓰기가 되어 있지 않은 상태에서 형태소 분석을 한 것이기 때문에 이를 제외.
     return eojeol_, morphtags_
 
 def transform_with_rules(eojeol, morphtags, rules=None):
@@ -96,30 +101,42 @@ def transform_with_rules(eojeol, morphtags, rules=None):
         rules = _rules
     return rules.get(eojeol, (None, None))
 
-def transform_with_short_morphtags(eojeol, morphs, tags, simple_tags):
+def transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
     if len(morphs) == 1:
-        return ((morphs[0], simple_tags[0]), ('', ''))
-    if len(morphtags) == 2:
-        return lr_form(eojeol, morphs, tags, simple_tags, 0)
+        return (MorphTag(morphs[0], simple_tags[0]), None)
     return None, None
 
-def transform_when_noun_is_changed_to_predicator(eojeol, morphs, tags, simple_tags, xsv_as_verb):
+def transform_when_noun_is_changed_to_predicator(
+    eojeol, morphs, tags, simple_tags, xsv_as_verb, debug=False):
     """XSV, XSA, VCP, VCN 과 같은 전성어미가 존재하는 경우"""
+
     for target in 'XSV XSA VCP VCN'.split():
         i = rindex(tags, target)
         if not (i > 0 and simple_tags[i-1] == 'Noun'):
             continue
         if xsv_as_verb:
-            return lr_form(eojeol, morphs, tags, simple_tags, i)
+            return lr_form(eojeol, morphs, tags, simple_tags, i, debug)
         else:
-            return lr_form(eojeol, morphs, tags, simple_tags, i-1)
+            return lr_form(eojeol, morphs, tags, simple_tags, i-1, debug)
     return None, None
 
-def basic(eojeol, morphs, tags, simple_tags):
+def transform_normal_case(eojeol, morphs, tags, simple_tags, debug=False):
     for target in 'Noun Pronoun Number Verb Adjective'.split():
         i = rindex(simple_tags, target)
         if i >= 0:
-            return lr_form(eojeol, morphs, tags, simple_tags, i)
+            return lr_form(eojeol, morphs, tags, simple_tags, i, debug)
+    return None, None
+
+def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
+    for target in 'Adverb Unk Exclamation'.split():
+        i = rindex(simple_tags, target)
+        if i < 0:
+            continue
+        if i == len(tags) - 1:
+            return  lr_form(eojeol, morphs, tags, simple_tags, i)
+        elif simple_tags[i+1] == 'Josa':
+            return lr_form(eojeol, morphs, tags, simple_tags,
+                i, debug, tag_l='Noun', tag_r='Josa')
     return None, None
 
 def rindex(tags, target):
@@ -129,7 +146,7 @@ def rindex(tags, target):
             return n - i - 1
     return -1
 
-def lr_form(eojeol, morphs, tags, simple_tags, i):
+def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r=None):
     """
     Arguments
     ---------
@@ -144,6 +161,12 @@ def lr_form(eojeol, morphs, tags, simple_tags, i):
     i : int
         Boundary index between L and R in morphs or tags.
         Last index of L
+    debug : Boolean
+        If True, print variables using for transforming morphemes to L-R structure
+    tag_l : str or None
+        User specified tag
+    tag_r : str or None
+        User specified tag
 
     Returns
     -------
@@ -176,21 +199,25 @@ def lr_form(eojeol, morphs, tags, simple_tags, i):
 
     b = surface_boundary()
     surface_l, surface_r = eojeol[:b], eojeol[b:]
-    tag_l = simple_tags[i]
-    tag_r = simple_tags[i+1] if i < (n-1) else None
+
+    if tag_l is None:
+        tag_l = simple_tags[i]
+    if tag_r is None:
+        tag_r = simple_tags[i+1] if i < (n-1) else None
 
     # use last character of morphs
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
     morph_l = surface_l[:-1] +  morphs[i][-1]
 
     if tag_l == 'Verb' or tag_l == 'Adjective' or tag_l == 'Noun':
-        morph_r = lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i)
+        morph_r = lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug)
     else:
         morph_r = surface_r
 
-    print('surface morph tag')
-    print('{} / {} / {}'.format(surface_l, morph_l, tag_l))
-    print('{} / {} / {}'.format(surface_r, morph_r, tag_r))
+    if debug:
+        print('surface morph tag')
+        print('{} / {} / {}'.format(surface_l, morph_l, tag_l))
+        print('{} / {} / {}'.format(surface_r, morph_r, tag_r))
 
     return MorphTag(morph_l, tag_l), MorphTag(morph_r, tag_r)
 
@@ -221,7 +248,7 @@ def lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug=False):
 
     # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류)
     # 통해서, [['통하', 'VV'], ['ㅕ서', 'EC']]
-    elif morph_l[-1] == '하' and c0 == '여' or c0 == 'ㅕ':
+    elif morph_l[-1] == '하' and (c0 == '여' or c0 == 'ㅕ' or c0 == '어' or c0 == 'ㅓ'):
         morph_r = '아' + surface_r
 
     # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우)
