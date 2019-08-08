@@ -1,13 +1,9 @@
-from refactoring_package._lr_rules import _rules
-from refactoring_package.simple_tag import to_simple_tag
-from refactoring_package.loader import MorphTag
-from refactoring_package.utils import is_jaum, is_moum
+from ._lr_rules import _rules
+from .simple_tag import to_simple_tag
+from .loader import MorphTag
+from .utils import is_jaum, is_moum, is_hangle, compose, decompose
 
-def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
-    lr_morphemes = morphtags_to_lr(eojeol, morphtags, xsv_as_verb, rules)
-    return None
-
-def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
+def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
 
     eojeol, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
