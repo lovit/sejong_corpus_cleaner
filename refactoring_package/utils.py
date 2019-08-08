@@ -1,6 +1,9 @@
 import os
 import subprocess
 
+sep = os.path.sep
+install_path = sep.join(os.path.abspath(__file__).split(sep)[:-1])
+data_dir = sep.join(os.path.abspath(__file__).split(sep)[:-2] + ['data', 'raw', ''])
 
 def check_encoding(paths):
     """
