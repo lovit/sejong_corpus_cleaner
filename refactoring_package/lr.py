@@ -211,35 +211,60 @@ def lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug=False):
         print('c0, c1 : {}'.format(c0, c1))
         print('concat : {}'.format(concat))
 
+    ###############
+    # lemmatizing #
+
     # 1음절이 1음절로 변하는 경우 (1음절 R 이 합쳐진 경우)
     # 다해, [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']]
     if not surface_r:
-        return w0
+        morph_r = w0
 
     # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류)
     # 통해서, [['통하', 'VV'], ['ㅕ서', 'EC']]
     elif morph_l[-1] == '하' and c0 == '여' or c0 == 'ㅕ':
-        return '아' + surface_r
+        morph_r = '아' + surface_r
 
     # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우)
     # 느꼈으니, [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']]
     elif surface_r == concat[1:]:
-        return c0 + surface_r
+        morph_r = c0 + surface_r
 
     # 2음절이 1음절이 변하는 경우 (R 의 첫음절이 자음인 경우)
     # 예외적인, [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']]
     elif is_jaum(c0):
-        return c0 + surface_r
+        morph_r = c0 + surface_r
 
     # 1 음절이 2음절로 변하는 경우
     # ('반가우면서도', [['반갑', 'VA'], ['면서', 'EC'], ['도', 'JX']]),
     elif surface_r[1:] == concat:
-        return surface_r[0] + concat
+        morph_r = surface_r[0] + concat
 
     # 3음절이 2음절로 변하는 경우
     # 거셨을, [[('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')]]
     elif surface_r[1:] == concat[2:]:
-        return concat[:2] + surface_r[1:]
+        morph_r = concat[:2] + surface_r[1:]
 
     else:
-        return c0 + surface_r[1:]
+        morph_r = c0 + surface_r[1:]
+
+    ##################
+    # postprocessing #
+
+    # R 의 첫글자가 모음인 경우
+    # 통해서, [['통하', 'VV'], ['ㅏ서', 'EC']]
+    if len(morph_r) > 0 and is_moum(morph_r[0]):
+        morph_r = compose('ㅇ', morph_r[0], ' ') + morph_r[1:]
+
+    if len(morph_r) > 1 and is_hangle(morph_r[0]):
+        cjj = decompose(morph_r[0])
+        # R 의 두번째 글자가 자음인 경우
+        if is_jaum(morph_r[1]):
+            morph_r = compose(cjj[0], cjj[1], morph_r[1]) + morph_r[2:]
+        # R 의 두번째 글자가 모음인 경우
+        if is_moum(morph_r[1]):
+            morph_r = morph_r[0] + compose('ㅇ', morph_r[1], ' ') + morph_r[2:]
+        # R 의 첫번째 글자와 두번째 글자가 이ㅣ 로 중복된 경우
+        if (morph_r[1] == '이' or morph_r[1] == 'ㅣ') and (cjj[1] == 'ㅣ' and cjj[2] == ' '):
+            morph_r = morph_r[0] + morph_r[2:]
+
+    return morph_r
