@@ -19,7 +19,10 @@ def morphtags_to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None):
     if l is not None:
         return l, r
 
-    l, r = transform_when_pos_is_changed(eojeol, morphtags)
+    # 전성 어미가 존재할 경우.
+    # xsv_as_verb = True 이면 "시작/NNG + 하/XSV + ㄴ다/EP" -> "시작하/Verb + ㄴ다/Eomi"
+    # xsv_as_verb = False 이면 "시작/Noun + 한다/Verb" 로 변형한다.
+    l, r = transform_when_pos_is_changed(eojeol, morphtags, xsv_as_verb)
     if l is not None:
         return l, r
 
@@ -70,6 +73,8 @@ def preprocess(eojeol, morphtags):
             eojeol_ = eojeol_.replace(morphtag.morph, '', 1)
         else:
             morphtags_.append(morphtag)
+
+    # TODO: 용언이 두 개가 넘개 존재하는 경우는 띄어쓰기가 되어 있지 않은 상태에서 형태소 분석을 한 것이기 때문에 이를 제외.
     return eojeol_, morphtags_
 
 def transform_with_rules(eojeol, morphtags, rules=None):
@@ -96,4 +101,6 @@ def transform_when_pos_is_changed(eojeol, morphtags):
     """
     XSV, XSA, VCP, VCN 과 같은 전성어미가 존재하는 경우
     """
+    for tag in 'XSV XSA VCP VCN'.split():
+        continue
     raise NotImplemented
