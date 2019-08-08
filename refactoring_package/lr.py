@@ -92,7 +92,7 @@ def preprocess(eojeol, morphtags):
 
 def transform_with_rules(eojeol, morphtags, rules=None):
     if to_simple_tag(morphtags[-1].tag) == 'Noun':
-        return ((eojeol, 'Noun'), ('', ''))
+        return (MorphTag(eojeol, 'Noun'), None)
     if rules is None:
         rules = _rules
     return rules.get(eojeol, (None, None))
