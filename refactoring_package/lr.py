@@ -4,41 +4,67 @@ from .loader import MorphTag
 from .utils import is_jaum, is_moum, is_hangle, compose, decompose
 
 def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
+    """
+    Arguments
+    ---------
+    eojeol : str
+        Eojeol text
+    morphtags : list of MorphTag
+        list of namedtuple of (morpheme, tag)
+    xsv_as_verb : Boolean
+        For a morpheme, tag sequence "시작/NNG + 하/XSV + ㄴ다/EP"
+        If True, it returns "시작하/Verb + ㄴ다/Eomi"
+        Else it returns "시작/Noun + 한다/Verb"
+    rules : dict
+        L, R tramsform rules
+        {eojeol: ((L morph, L tag), (R morph, R tag))}
+    debug : Boolean
+        If True, it shows local variables.
 
-    eojeol, morphtags = preprocess(eojeol, morphtags)
+    Returns
+    -------
+    preprocessed_eojeol : str
+        Eojeol text after removing symbols
+    l : MorphTag
+        namedtuple of (morph, tag) in L-R format
+    r : MorphTag
+        namedtuple of (morph, tag) in L-R format
+    """
+
+    eojeol_, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
         message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
             eojeol, morphtags)
         raise ValueError(message)
 
-    l, r = transform_with_rules(eojeol, morphtags, rules=None)
+    l, r = transform_with_rules(eojeol_, morphtags, rules=None)
     if l is not None:
-        return l, r
+        return eojeol_, l, r
 
     # prepare materials
     morphs = [mt.morph for mt in morphtags]
     tags = [mt.tag for  mt in morphtags]
     simple_tags = [to_simple_tag(tag) for tag in tags]
 
-    l, r = transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug)
+    l, r = transform_uni_morphtag(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return l, r
+        return eojeol_, l, r
 
     # 전성 어미가 존재할 경우.
     # xsv_as_verb = True 이면 "시작/NNG + 하/XSV + ㄴ다/EP" -> "시작하/Verb + ㄴ다/Eomi"
     # xsv_as_verb = False 이면 "시작/Noun + 한다/Verb" 로 변형한다.
     l, r = transform_when_noun_is_changed_to_predicator(
-        eojeol, morphs, tags, simple_tags, xsv_as_verb)
+        eojeol_, morphs, tags, simple_tags, xsv_as_verb)
     if l is not None:
-        return l, r
+        return eojeol_, l, r
 
-    l, r = transform_normal_case(eojeol, morphs, tags, simple_tags, debug)
+    l, r = transform_normal_case(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return l, r
+        return eojeol_, l, r
 
-    l, r = transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug)
+    l, r = transform_exceptional_case(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return l, r
+        return eojeol_, l, r
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
     raise ValueError(message)
