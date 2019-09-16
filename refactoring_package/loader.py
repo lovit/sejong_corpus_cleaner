@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 
 from .utils import unicode_sentence
+from .format_checkrt import check_sejong_tagset
 
 
 sep = os.path.sep
@@ -206,7 +207,11 @@ def load_a_file(path, remain_dummy_morpheme=False, debug=False):
     for i, sent in enumerate(sentences):
         try:
             sent = as_sentence_instance(sent, remain_dummy_morpheme)
-            sentences_.append(sent)
+            if check_sejong_tagset(sent):
+                sentences_.append(sent)
+            else:
+                n_errors += 1
+                continue
         except Exception as e:
             if debug:
                 print('\n\nException message = {}'.format(e))
