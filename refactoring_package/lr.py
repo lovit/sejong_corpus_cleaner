@@ -170,6 +170,11 @@ def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
             continue
         if debug:
             print('called transform_exceptional_case')
+        if target == 'Number':
+            if i == 0:
+                return lr_form(eojeol, morphs, tags, simple_tags, i, tag_l='Number')
+            else:
+                return lr_form(eojeol, morphs, tags, simple_tags, i, tag_l='Noun')
         if i == len(tags) - 1:
             return lr_form(eojeol, morphs, tags, simple_tags, i)
         elif simple_tags[i+1] == 'Josa':
