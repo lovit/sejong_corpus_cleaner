@@ -11,7 +11,7 @@ def make_eojeol_morphemes_table(table_file_path, data_dir=None,
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
 
-def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, xsv_as_verb=False, xsv_as_root=False):
+def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, noun_xsv_as_verb=False, xsv_as_root=False):
     """
     Arguments
     ---------
@@ -24,7 +24,7 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, xsv_as
     convert_lr : Boolean
         If True, it transforms morphtags to L-R format
         Else, it uses sejong corpus tag structure.
-    xsv_as_verb : Boolean
+    noun_xsv_as_verb : Boolean
         Option for L-R format transformation.
         If True, it considers Noun + XSV as verb.
         For example,
@@ -37,7 +37,7 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, xsv_as
 
     xsv_as_root : Boolean
         Option for L-R format transformation.
-        It executes only when xsv_as_verb is False
+        It executes only when noun_xsv_as_verb is False
         If True, it considers XSV as root of verb
 
             $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하/Verb + 다/Eomi"
@@ -71,7 +71,7 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, xsv_as
         counter_ = defaultdict(int)
         for (eojeol, morphtags), count in counter.items():
             try:
-                eojeol_, l, r = to_lr(eojeol, morphtags, xsv_as_verb=xsv_as_verb, debug=False)
+                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb=noun_xsv_as_verb, debug=False)
                 key = (eojeol_, l, r)
                 counter_[key] += count
             except Exception as e:
@@ -91,13 +91,13 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, xsv_as
     return dict(counter)
 
 def make_morpheme_table(table_file_path, data_dir=None,
-    convert_lr=False, xsv_as_verb=False, corpus_types=None):
+    convert_lr=False, noun_xsv_as_verb=False, corpus_types=None):
 
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
 
 def make_lr_corpus(corpus_file_path, data_dir=None,
-    xsv_as_verb=False, corpus_types=None):
+    noun_xsv_as_verb=False, corpus_types=None):
 
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
