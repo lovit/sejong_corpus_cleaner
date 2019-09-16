@@ -31,6 +31,12 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
         namedtuple of (morph, tag) in L-R format
     """
 
+    # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], 2),
+    # ('6.25의', [('6', 'SN'), ('.', 'SF'), ('25', 'SN'), ('의', 'JKO')], 2),
+    eojeol_, l, r = transform_symbol_noun(eojeol, morphtags, debug)
+    if l is not None:
+        return eojeol_, l, r
+
     eojeol_, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
         if debug:
@@ -118,6 +124,22 @@ def preprocess(eojeol, morphtags):
         else:
             morphtags_.append(morphtag)
     return eojeol_, morphtags_
+
+def transform_symbol_noun(eojeol, morphtags, debug=False):
+    def all_are_number_or_symbol(simple_tags, i):
+        for t in simple_tags[:i+1]:
+            if not (t == 'Number' or t == 'Symbol' or t == 'Noun' or t == 'Determiner'):
+                return False
+        return True
+
+    simple_tags = [to_simple_tag(mt.tag) for mt in morphtags]
+    i = rindex(simple_tags, {'Number', 'Symbol'})
+    if i >= 1 and all_are_number_or_symbol(simple_tags, i):
+        if debug:
+            print('called transform_symbol_noun')
+        l, r = lr_form(eojeol, morphs, tags, simple_tags, i, debug, tag_l='Noun')
+        return eojeol, l, r
+    return eojeol, None, None
 
 def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     if to_simple_tag(morphtags[-1].tag) == 'Noun':
@@ -238,7 +260,9 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
 
     n = len(morphs)
     if i == (n-1):
-        return (MorphTag(eojeol, simple_tags[-1]), None)
+        if tag_l is None:
+            tag_l = simple_tags[-1]
+        return (MorphTag(eojeol, tag_l), None)
 
     def only_hangle(morph):
         return ''.join(c for c in morph if not (is_jaum(c) or is_moum(c)))
