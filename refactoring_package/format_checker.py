@@ -6,7 +6,7 @@ sejong_tagset = {
     "SP", "SS", "SW"
 }
 
-def does_sent_have_wrong_tag(sentence):
+def check_sejong_tagset(sentence):
     """
     Argument
     --------

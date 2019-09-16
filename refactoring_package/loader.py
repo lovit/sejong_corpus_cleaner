@@ -136,14 +136,15 @@ class Sentence:
         return [mt for mts in self.morphtags for mt in mts]
 
 
-def load_a_file(path, remain_not_exists=False, debug=False):
+def load_a_file(path, remain_dummy_morpheme=False, debug=False):
     """
     Argument
     --------
     path : str
         File path
-    remain_not_exists : Boolean
-        If True, it does not remove not-exsit morphemes
+    remain_dummy_morpheme : Boolean
+        If True, it remain dummy morphemes
+        Else, it removes dummy morphemes
         Default is False
     debug : Boolean
         If True, it shows exception case
@@ -204,7 +205,7 @@ def load_a_file(path, remain_not_exists=False, debug=False):
     sentences_ = []
     for i, sent in enumerate(sentences):
         try:
-            sent = as_sentence_instance(sent, remain_not_exists)
+            sent = as_sentence_instance(sent, remain_dummy_morpheme)
             sentences_.append(sent)
         except Exception as e:
             if debug:
@@ -213,17 +214,17 @@ def load_a_file(path, remain_not_exists=False, debug=False):
             n_errors += 1
     return sentences_, n_errors
 
-def as_sentence_instance(sent, remain_not_exists):
+def as_sentence_instance(sent, remain_dummy_morpheme):
     eojeol_morphtags = [e.split('\t') for e in sent.split('\n')]
     eojeols, morphtags = zip(*eojeol_morphtags)
     morphtags = [[mt.rsplit('/',1) for mt in mts.split(' + ')] for mts in morphtags]
 
     # remove not exist morphemes
-    def exists(morphtag):
-        return not ('(' in morphtag[0] and ')' in morphtag[0])
+    def is_dummy(morphtag):
+        return ('(' in morphtag[0]) and (')' in morphtag[0])
 
-    if not remain_not_exists:
-        morphtags = [[mt for mt in mts if exists(mt)] for mts in morphtags]
+    if not remain_dummy_morpheme:
+        morphtags = [[mt for mt in mts if not is_dummy(mt)] for mts in morphtags]
 
     morphtags = [[MorphTag(m,t) for m,t in mts] for mts in morphtags]
     return Sentence(eojeols, morphtags)

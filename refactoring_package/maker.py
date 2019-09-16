@@ -14,7 +14,7 @@ def make_eojeol_morphemes_table(table_file_path, data_dir=None,
 def load_counter(file_paths, only_morpheme, convert_lr=False, xsv_as_verb=False):
     counter = defaultdict(int)
     for path in file_paths:
-        sents, n_errors = load_a_file(path, remain_not_exists=False)
+        sents, n_errors = load_a_file(path, remain_dummy_morpheme=False)
         for sent in sents:
             for eojeol, morphtags in sent:
                 key = (eojeol, tuple(morphtags))
