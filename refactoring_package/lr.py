@@ -37,6 +37,11 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
     if l is not None:
         return eojeol_, l, r
 
+    # ('IBM에서는', [('IBM', 'SL'), ('에서', 'JKB'), ('는', 'JX'), 0])
+    eojeol_, l, r = transform_foreign_noun(eojeol, morphtags, debug)
+    if l is not None:
+        return eojeol_, l, r
+
     eojeol_, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
         if debug:
@@ -75,7 +80,6 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
         return eojeol_, l, r
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
-    print(eojeol_, morphtags)
     raise ValueError(message)
 
 def preprocess(eojeol, morphtags):
@@ -143,6 +147,19 @@ def transform_symbol_noun(eojeol, morphtags, debug=False):
         l = MorphTag(morph_l, 'Noun')
         r = MorphTag(morph_r, simple_tags[i+1]) if morph_r else None
         return eojeol, l, r
+    return eojeol, None, None
+
+def transform_foreign_noun(eojeol, morphtags, debug=False):
+    simple_tags = [to_simple_tag(mt.tag) for mt in morphtags]
+    if (morphtags[0].tag == 'SH') or (morphtags[0].tag == 'SL'):
+        if debug:
+            print('called transform_foreign_noun')
+        if len(morphtags) == 1:
+            return eojeol, MorphTag(morphtags[0].morph, 'Noun'), None
+        elif simple_tags[1] != 'Symbol':
+            morph_l = morphtags[0].morph
+            morph_r = eojeol[len(morph_l):]
+            return eojeol, MorphTag(morph_l, 'Noun'), MorphTag(morph_r, simple_tags[1])
     return eojeol, None, None
 
 def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
