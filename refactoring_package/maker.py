@@ -11,7 +11,8 @@ def make_eojeol_morphemes_table(table_file_path, data_dir=None,
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
 
-def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, noun_xsv_as_verb=False, xsv_as_root=False):
+def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
+    noun_xsv_as_verb=False, xsv_as_root=False, show_exception_cases=False):
     """
     Arguments
     ---------
@@ -46,6 +47,9 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, noun_x
 
             $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하다/Verb"
 
+    show_exception_cases : Boolean
+        If True, it shows exception cases for debugging.
+
     Returns
     -------
     counter : {key:frequency}
@@ -65,19 +69,24 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False, noun_x
                 counter[key] += 1
     print('Loaded {} sents with {} errors from {} files'.format(n_sents_, n_errors_, len(file_paths)))
 
-    # TODO: L-R converting
     if convert_lr:
+        n_transform_exceptions = 0
         # TODO : xsv_as_root option
         counter_ = defaultdict(int)
         for (eojeol, morphtags), count in counter.items():
             try:
-                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb=noun_xsv_as_verb, debug=False)
-                key = (eojeol_, l, r)
+                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb, debug=False)
+                key = (eojeol_, (l, r))
                 counter_[key] += count
             except Exception as e:
-                print('L-R format converting error in (eojeol={}, morphtags={})'.format(eojeol, morphtags))
-                print(e, end='\n\n')
+                n_transform_exceptions += 1
+                if show_exception_cases:
+                    print('L-R format converting error in (eojeol={}, morphtags={})'.format(eojeol, morphtags))
+                    print(e, end='\n\n')
                 continue
+
+        if n_transform_exceptions > 0:
+            print('Found {} L-R transformation exception cases'.format(n_transform_exceptions))
 
         counter = counter_
 
