@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import os
 
 from .utils import unicode_sentence
-from .format_checkrt import check_sejong_tagset
+from .format_checker import check_sejong_tagset
 
 
 sep = os.path.sep

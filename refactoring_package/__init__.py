@@ -1,6 +1,6 @@
 __author__ = 'lovit'
 
-from .format_checker import does_sent_have_wrong_tag
+from .format_checker import check_sejong_tagset
 from .loader import load_a_file
 from .lr import to_lr
 from .maker import make_eojeol_morphemes_table
@@ -11,7 +11,7 @@ from .simple_tag import to_simple_morphtags
 from .utils import check_encoding
 
 __all__ = [
-    'does_sent_have_wrong_tag',
+    'check_sejong_tagset',
     'load_a_file',
     'make_eojeol_morphemes_table',
     'make_morpheme_table',
