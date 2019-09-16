@@ -3,7 +3,7 @@ from .simple_tag import to_simple_tag
 from .loader import MorphTag
 from .utils import is_jaum, is_moum, is_hangle, compose, decompose
 
-def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
+def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
     """
     Arguments
     ---------
@@ -11,7 +11,7 @@ def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
         Eojeol text
     morphtags : list of MorphTag
         list of namedtuple of (morpheme, tag)
-    xsv_as_verb : Boolean
+    noun_xsv_as_verb : Boolean
         For a morpheme, tag sequence "시작/NNG + 하/XSV + ㄴ다/EP"
         If True, it returns "시작하/Verb + ㄴ다/Eomi"
         Else it returns "시작/Noun + 한다/Verb"
@@ -51,10 +51,10 @@ def to_lr(eojeol, morphtags, xsv_as_verb=False, rules=None, debug=False):
         return eojeol_, l, r
 
     # 전성 어미가 존재할 경우.
-    # xsv_as_verb = True 이면 "시작/NNG + 하/XSV + ㄴ다/EP" -> "시작하/Verb + ㄴ다/Eomi"
-    # xsv_as_verb = False 이면 "시작/Noun + 한다/Verb" 로 변형한다.
+    # noun_xsv_as_verb = True 이면 "시작/NNG + 하/XSV + ㄴ다/EP" -> "시작하/Verb + ㄴ다/Eomi"
+    # noun_xsv_as_verb = False 이면 "시작/Noun + 한다/Verb" 로 변형한다.
     l, r = transform_when_noun_is_changed_to_predicator(
-        eojeol_, morphs, tags, simple_tags, xsv_as_verb)
+        eojeol_, morphs, tags, simple_tags, noun_xsv_as_verb, debug)
     if l is not None:
         return eojeol_, l, r
 
@@ -129,14 +129,14 @@ def transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
     return None, None
 
 def transform_when_noun_is_changed_to_predicator(
-    eojeol, morphs, tags, simple_tags, xsv_as_verb, debug=False):
+    eojeol, morphs, tags, simple_tags, noun_xsv_as_verb, debug=False):
     """XSV, XSA, VCP, VCN 과 같은 전성어미가 존재하는 경우"""
 
     for target in 'XSV XSA VCP VCN'.split():
         i = rindex(tags, target)
         if not (i > 0 and simple_tags[i-1] == 'Noun'):
             continue
-        if xsv_as_verb:
+        if noun_xsv_as_verb:
             return lr_form(eojeol, morphs, tags, simple_tags, i, debug)
         else:
             return lr_form(eojeol, morphs, tags, simple_tags, i-1, debug)
@@ -232,7 +232,7 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
     morph_l = surface_l[:-1] +  morphs[i][-1]
 
     if tag_l == 'Verb' or tag_l == 'Adjective' or tag_l == 'Noun':
-        morph_r = lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug)
+        morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug)
     else:
         morph_r = surface_r
 
@@ -243,55 +243,88 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
 
     return MorphTag(morph_l, tag_l), MorphTag(morph_r, tag_r)
 
-def lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug=False):
+def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=False):
+    """
+    eojeol : str
+        Eojeol
+    surface_l : str
+        Surfacial form of L
+    surface_r : str
+        Surfacial form of R
+    morph_l : str
+        Canonical form of L
+    tag_l : str
+        Simple tag of L
+    morphs : list of str
+        Canonical form of morphemes
+    i : int
+        Last position of L in morphs
+    debug : Boolean
+        If True, it shows components
+    """
     w0 = morphs[i+1] # first morph of R
     c0 = w0[0]       # firsr character of R
     c1 = '' if len(w0) == 1 else w0[1] # second character of R
-    concat = ''.join(morphs[i+1:])
+    concat_r = ''.join(morphs[i+1:])
 
     if debug:
-        print('eojeol : {}'.format(eojeol))
+        print('eojeol    : {}'.format(eojeol))
         print('surface_l : {}'.format(surface_l))
         print('surface_r : {}'.format(surface_r))
-        print('morph_l : {}'.format(morph_l))
-        print('morphs : {}'.format(morphs))
-        print('i : {}'.format(i))
-        print('w0 : {}'.format(w0))
-        print('c0, c1 : {}'.format(c0, c1))
-        print('concat : {}'.format(concat))
+        print('morph_l   : {}'.format(morph_l))
+        print('tag_l     : {}'.format(tag_l))
+        print('morphs    : {}'.format(morphs))
+        print('i         : {}'.format(i))
+        print('w0        : {}'.format(w0))
+        print('c0, c1    : {}'.format(c0, c1))
+        print('concat_r  : {}'.format(concat_r))
 
     ###############
-    # lemmatizing #
+    # lemmatizing josa #
+    if tag_l == 'Noun':
+        if c0 and is_jaum(c0):
+            return c0 + surface_r
+        else:
+            return surface_r
 
-    # 1음절이 1음절로 변하는 경우 (1음절 R 이 합쳐진 경우)
-    # 다해, [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']]
+    ###############
+    # lemmatizing eomis #
+
+    # 활용시 2음절이 1음절로 변하는 경우 (1음절 R 이 합쳐진 경우)
+    # 복원시 1음절을 2음절로 확장
+    # ('다해', [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']])
     if not surface_r:
         morph_r = w0
 
-    # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류)
-    # 통해서, [['통하', 'VV'], ['ㅕ서', 'EC']]
+    # 활용시 2음절이 1음절이 변하는 경우 (1음절 L 과 1음절 R 이 합쳐진 경우, -하다 동사류)
+    # 복원시 1음절을 2음절 (1음절 L 과 1음절 R) 로 확장
+    # ('통해서', [['통하', 'VV'], ['ㅕ서', 'EC']])
     elif morph_l[-1] == '하' and (c0 == '여' or c0 == 'ㅕ' or c0 == '어' or c0 == 'ㅓ'):
         morph_r = '아' + surface_r
 
-    # 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우)
-    # 느꼈으니, [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']]
-    elif surface_r == concat[1:]:
+    # 활용시 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류 외)
+    # 복원시 1음절을 2음절 (1음절 L 과 1음절 R) 로 확장
+    # ('느꼈으니', [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']])
+    elif surface_r == concat_r[1:]:
         morph_r = c0 + surface_r
 
-    # 2음절이 1음절이 변하는 경우 (R 의 첫음절이 자음인 경우)
-    # 예외적인, [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']]
+    # 활용시 첫글자가 자음인 R 이 L 에 병합된 경우
+    # 복원시 R 의 자음을 surface 에 부착
+    # ('예외적인', [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']])
     elif is_jaum(c0):
         morph_r = c0 + surface_r
 
-    # 1 음절이 2음절로 변하는 경우
+    # 활용시 R 에 1음절이 추가된 경우
+    # 복원시 R 에 추가된 음절을 포함
     # ('반가우면서도', [['반갑', 'VA'], ['면서', 'EC'], ['도', 'JX']]),
-    elif surface_r[1:] == concat:
-        morph_r = surface_r[0] + concat
+    elif surface_r[1:] == concat_r:
+        morph_r = surface_r[0] + concat_r
 
-    # 3음절이 2음절로 변하는 경우
-    # 거셨을, [[('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')]]
-    elif surface_r[1:] == concat[2:]:
-        morph_r = concat[:2] + surface_r[1:]
+    # 활용시 1음절의 L 과 2음절의 R 이 각각 활용된 1음절과 축약된 1음절로 변형된 경우
+    # 복원시 L 의 마지막 음절을 복원하고, R 의 첫음절을 두 개의 음절로 복원
+    # ('거셨을', [('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')])
+    elif surface_r[1:] == concat_r[2:]:
+        morph_r = concat_r
 
     else:
         morph_r = c0 + surface_r[1:]
@@ -310,10 +343,10 @@ def lemmatize(eojeol, surface_l, surface_r, morph_l, morphs, i, debug=False):
         if is_jaum(morph_r[1]):
             morph_r = compose(cjj[0], cjj[1], morph_r[1]) + morph_r[2:]
         # R 의 두번째 글자가 모음인 경우
-        if is_moum(morph_r[1]):
+        if len(morph_r) > 1 and is_moum(morph_r[1]):
             morph_r = morph_r[0] + compose('ㅇ', morph_r[1], ' ') + morph_r[2:]
         # R 의 첫번째 글자와 두번째 글자가 이ㅣ 로 중복된 경우
-        if (morph_r[1] == '이' or morph_r[1] == 'ㅣ') and (cjj[1] == 'ㅣ' and cjj[2] == ' '):
+        if len(morph_r) > 1 and (morph_r[1] == '이' or morph_r[1] == 'ㅣ') and (cjj[1] == 'ㅣ' and cjj[2] == ' '):
             morph_r = morph_r[0] + morph_r[2:]
 
     return morph_r
