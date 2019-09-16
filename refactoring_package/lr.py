@@ -183,9 +183,28 @@ def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
     return None, None
 
 def rindex(tags, target):
+    """
+    Arguments
+    ---------
+    tags : list of str
+        Tag list
+    target : str or set of str
+        A target tag or tagset
+
+    Usage
+    -----
+        >>> rindex(['a', 'b', 'c', 'a', 'b'], target='a') # 3
+        >>> rindex(['a', 'b', 'c', 'a', 'b'], target='c') # 2
+        >>> rindex(['a', 'b', 'c', 'a', 'b'], target={'b', 'c'}) # 4
+    """
+    def match(tag_i, target):
+        if isinstance(target, str):
+            return tag_i == target
+        return tag_i in target
+
     n = len(tags)
     for i, tag_i in enumerate(tags[::-1]):
-        if tag_i == target:
+        if match(tag_i, target):
             return n - i - 1
     return -1
 
