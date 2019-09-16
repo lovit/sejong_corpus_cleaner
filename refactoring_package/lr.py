@@ -79,6 +79,10 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
     if l is not None:
         return eojeol_, l, r
 
+    l, r = transform_only_eomi_josa(eojeol, morphtags, tags, simple_tags, debug)
+    if l is not None:
+        return eojeol_, l, r
+
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
     raise ValueError(message)
 
@@ -227,6 +231,19 @@ def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
             return lr_form(eojeol, morphs, tags, simple_tags,
                 i, debug, tag_l='Noun', tag_r='Josa')
     return None, None
+
+def transform_only_eomi_josa(eojeol, morphtags, tags, simple_tags, debug=False):
+    def all_eomi_or_josa(simple_tags):
+        for t in simple_tags:
+            if not (t == 'Josa' or t == 'Eomi'):
+                return False
+        return True
+
+    if not all_eomi_or_josa(simple_tags):
+        return None, None
+    if debug:
+        print('called transform_only_eomi_josa')
+    return MorphTag(eojeol, simple_tags[0]), None
 
 def rindex(tags, target):
     """
