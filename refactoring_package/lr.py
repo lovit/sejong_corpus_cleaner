@@ -77,6 +77,9 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
 
     # ('왜냐,', [('왜', 'MAG'), ('냐', 'EF'), (',', 'SP')], -1),
     # ('진짜야?', [('진짜', 'MAG'), ('야', 'EF'), ('?', 'SF')], -1),
+    # ('야라는', [('야','IC'), ('라는','ETM')], -1),
+    # ('야라니?', [('야','IC'), ('라니','EF'), ('?','SF')], -1),
+    # ('여보셔요!"', [('여보','IC'), ('시','EP'), ('어요','EF'), ('!','SF'), ('"','SS')], -1),
     l, r = transform_exceptional_case(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
         return eojeol_, l, r
@@ -234,6 +237,8 @@ def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
                 i, debug, tag_l='Noun', tag_r='Josa')
         elif target == 'Adverb' and simple_tags[i+1] == 'Eomi' and simple_tags[-1] == 'Eomi':
             return MorphTag(eojeol, 'Adverb'), None
+        elif target == 'Exclamation' and simple_tags[i+1] == 'Eomi' and simple_tags[-1] == 'Eomi':
+            return lr_form(eojeol, morphs, tags, simple_tags, i, tag_l='Exclamation', tag_r='Josa')
     return None, None
 
 def transform_only_eomi_josa(eojeol, morphtags, tags, simple_tags, debug=False):
