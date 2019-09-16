@@ -128,16 +128,20 @@ def preprocess(eojeol, morphtags):
 def transform_symbol_noun(eojeol, morphtags, debug=False):
     def all_are_number_or_symbol(simple_tags, i):
         for t in simple_tags[:i+1]:
-            if not (t == 'Number' or t == 'Symbol' or t == 'Noun' or t == 'Determiner'):
+            if not (t == 'Number' or t == 'Symbol'):
                 return False
         return True
 
     simple_tags = [to_simple_tag(mt.tag) for mt in morphtags]
+    morphs = [mt.morph for mt in morphtags]
     i = rindex(simple_tags, {'Number', 'Symbol'})
-    if i >= 1 and all_are_number_or_symbol(simple_tags, i):
+    if i >= 1 and all_are_number_or_symbol(simple_tags, i) and simple_tags[i] == 'Number':
         if debug:
             print('called transform_symbol_noun')
-        l, r = lr_form(eojeol, morphs, tags, simple_tags, i, debug, tag_l='Noun')
+        morph_l = ''.join(morphs[:i+1])
+        morph_r = eojeol[len(morph_l):]
+        l = MorphTag(morph_l, 'Noun')
+        r = MorphTag(morph_r, simple_tags[i+1]) if morph_r else None
         return eojeol, l, r
     return eojeol, None, None
 
