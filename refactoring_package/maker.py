@@ -75,7 +75,7 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
         counter_ = defaultdict(int)
         for (eojeol, morphtags), count in counter.items():
             try:
-                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb, debug=False)
+                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb, debug=False)[0]
                 key = (eojeol_, (l, r))
                 counter_[key] += count
             except Exception as e:
@@ -86,7 +86,8 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
                 continue
 
         if n_transform_exceptions > 0:
-            print('Found {} L-R transformation exception cases'.format(n_transform_exceptions))
+            print('Found {} (eojeol, morphtags) pairs with {} L-R transformation exception cases'.format(
+                len(counter_), n_transform_exceptions))
 
         counter = counter_
 

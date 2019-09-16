@@ -23,24 +23,23 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
 
     Returns
     -------
-    preprocessed_eojeol : str
-        Eojeol text after removing symbols
-    l : MorphTag
-        namedtuple of (morph, tag) in L-R format
-    r : MorphTag
-        namedtuple of (morph, tag) in L-R format
+    list_eojeol_morphtags : list of tuple
+        Each tuple consists with (preprocessed_eojeol, l, r)
+        preprocessed_eojeol is text after removing symbols, str type
+        l is namedtuple of (morph, tag) in L-R format, MorphTag type
+        r is namedtuple of (morph, tag) in L-R format, MorphTag type
     """
 
     # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], 2),
     # ('6.25의', [('6', 'SN'), ('.', 'SF'), ('25', 'SN'), ('의', 'JKO')], 2),
     eojeol_, l, r = transform_symbol_noun(eojeol, morphtags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     # ('IBM에서는', [('IBM', 'SL'), ('에서', 'JKB'), ('는', 'JX'), 0])
     eojeol_, l, r = transform_foreign_noun(eojeol, morphtags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     eojeol_, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
@@ -48,11 +47,11 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
             message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
                 eojeol, morphtags)
             raise ValueError(message)
-        return eojeol_, None, None
+        return [(eojeol_, None, None)]
 
     l, r = transform_with_rules(eojeol_, morphtags, rules=None, debug=debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     # prepare materials
     morphs = [mt.morph for mt in morphtags]
@@ -61,7 +60,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
 
     l, r = transform_uni_morphtag(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     # 전성 어미가 존재할 경우.
     # noun_xsv_as_verb = True 이면 "시작/NNG + 하/XSV + ㄴ다/EP" -> "시작하/Verb + ㄴ다/Eomi"
@@ -69,11 +68,11 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
     l, r = transform_when_noun_is_changed_to_predicator(
         eojeol_, morphs, tags, simple_tags, noun_xsv_as_verb, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     l, r = transform_normal_case(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     # ('왜냐,', [('왜', 'MAG'), ('냐', 'EF'), (',', 'SP')], -1),
     # ('진짜야?', [('진짜', 'MAG'), ('야', 'EF'), ('?', 'SF')], -1),
@@ -82,11 +81,11 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
     # ('여보셔요!"', [('여보','IC'), ('시','EP'), ('어요','EF'), ('!','SF'), ('"','SS')], -1),
     l, r = transform_exceptional_case(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     l, r = transform_only_eomi_josa(eojeol, morphtags, tags, simple_tags, debug)
     if l is not None:
-        return eojeol_, l, r
+        return [(eojeol_, l, r)]
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
     raise ValueError(message)
