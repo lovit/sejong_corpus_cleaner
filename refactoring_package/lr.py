@@ -120,6 +120,9 @@ def preprocess(eojeol, morphtags):
     def is_useless(morph, tag):
         return '(' in morph or ')' in morph or (tag[0] == 'S' and tag != 'SN') or tag[:1] == 'NA'
 
+    # remove empty morphs
+    morphtags = [mt for mt in morphtags if mt.morph]
+
     eojeol_ = eojeol
     morphtags_ = []
     for morphtag in morphtags:
