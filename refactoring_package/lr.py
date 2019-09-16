@@ -3,7 +3,7 @@ from .simple_tag import to_simple_tag
 from .loader import MorphTag
 from .utils import is_jaum, is_moum, is_hangle, compose, decompose
 
-def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
+def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=None, debug=False):
     """
     Arguments
     ---------
@@ -15,6 +15,17 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
         For a morpheme, tag sequence "시작/NNG + 하/XSV + ㄴ다/EP"
         If True, it returns "시작하/Verb + ㄴ다/Eomi"
         Else it returns "시작/Noun + 한다/Verb"
+    xsv_as_root : Boolean
+        Option for L-R format transformation.
+        It executes only when noun_xsv_as_verb is False
+        If True, it considers XSV as root of verb
+
+            $ "시작/NNG + 하/XSV + 다/EP" -> ["시작/Noun", "하/Verb + 다/Eomi"]
+
+        Else
+
+            $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하다/Verb"
+
     rules : dict
         L, R tramsform rules
         {eojeol: ((L morph, L tag), (R morph, R tag))}
@@ -29,6 +40,16 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
         l is namedtuple of (morph, tag) in L-R format, MorphTag type
         r is namedtuple of (morph, tag) in L-R format, MorphTag type
     """
+
+    if (not noun_xsv_as_verb) and (xsv_as_root):
+        separated = split_by_xsv(eojeol, morphtags, debug)
+        if len(separated) == 2:
+            (eojeol_0, morphtags_0), (eojeol_1, morphtags_1) = separated
+            eojeol_0_, l_0, r_0 = to_lr(eojeol_0, morphtags_0, noun_xsv_as_verb=False,
+                xsv_as_root=False, rules=rules, debug=debug)[0]
+            eojeol_1_, l_1, r_1 = to_lr(eojeol_1, morphtags_1, noun_xsv_as_verb=False,
+                xsv_as_root=False, rules=rules, debug=debug)[0]
+            return [(eojeol_0_, l_0, r_0), (eojeol_1_, l_1, r_1)]
 
     # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], 2),
     # ('6.25의', [('6', 'SN'), ('.', 'SF'), ('25', 'SN'), ('의', 'JKO')], 2),
@@ -89,6 +110,30 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
     raise ValueError(message)
+
+def split_by_xsv(eojeol, morphtags, debug=False):
+    """XSV, XSA, VCP, VCN 과 같은 전성어미가 존재하는 경우"""
+
+    tags = [mt.tag for mt in morphtags]
+    simple_tags = [to_simple_tag(mt.tag) for mt in morphtags]
+    for target in 'XSV XSA VCP VCN'.split():
+        i = rindex(tags, target)
+        if not (i > 0 and simple_tags[i-1] == 'Noun'):
+            continue
+        if debug:
+            print('called split_by_xsv')
+        eojeol_0 = ''.join([mt.morph for mt in morphtags[:i]])
+        eojeol_1 = eojeol[len(eojeol_0):]
+        morphtags_0 = morphtags[:i]
+        morphtags_1 = morphtags[i:]
+        if (not eojeol_0) or (not eojeol_1) or (not morphtags_0) or (not morphtags_1):
+            message = """Failed to split morphtags by xsv. eojeol={}, morphtags={}
+            -> eojeol_0 = ({}), morphtags_0 = ({})
+            -> eojeol_1 = ({}), morphtags_1 = ({})""".format(
+                eojeol, morphtags, eojeol_0, morphtags_0, eojeol_1, morphtags_1)
+            raise ValueError(message)
+        return [(eojeol_0, morphtags_0), (eojeol_1, morphtags_1)]
+    return [(eojeol, morphtags)]
 
 def preprocess(eojeol, morphtags):
     """

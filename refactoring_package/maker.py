@@ -41,7 +41,7 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
         It executes only when noun_xsv_as_verb is False
         If True, it considers XSV as root of verb
 
-            $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하/Verb + 다/Eomi"
+            $ "시작/NNG + 하/XSV + 다/EP" -> ["시작/Noun", "하/Verb + 다/Eomi"]
 
         Else
 
@@ -84,12 +84,10 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
                     print('L-R format converting error in (eojeol={}, morphtags={})'.format(eojeol, morphtags))
                     print(e, end='\n\n')
                 continue
-
-        if n_transform_exceptions > 0:
-            print('Found {} (eojeol, morphtags) pairs with {} L-R transformation exception cases'.format(
-                len(counter_), n_transform_exceptions))
-
         counter = counter_
+
+        print('Found {} (eojeol, morphtags) pairs with {} L-R transformation exception cases'.format(
+            len(counter_), n_transform_exceptions))
 
     if not eojeol_morpheme_pair:
         morph_counter = defaultdict(int)
