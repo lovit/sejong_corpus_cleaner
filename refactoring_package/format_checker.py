@@ -20,5 +20,5 @@ def check_sejong_tagset(sentence):
     for _, morphtags in sentence:
         for morphtag in morphtags:
             if not (morphtag.tag in sejong_tagset):
-                return True
-    return False
+                return False
+    return True

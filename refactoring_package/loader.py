@@ -210,6 +210,7 @@ def load_a_file(path, remain_dummy_morpheme=False, debug=False):
             if check_sejong_tagset(sent):
                 sentences_.append(sent)
             else:
+                print('Found wrong sejong tag from {} th sent'.format(i))
                 n_errors += 1
                 continue
         except Exception as e:
