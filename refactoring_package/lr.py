@@ -33,11 +33,13 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
 
     eojeol_, morphtags = preprocess(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
-        message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
-            eojeol, morphtags)
-        raise ValueError(message)
+        if debug:
+            message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
+                eojeol, morphtags)
+            raise ValueError(message)
+        return eojeol_, None, None
 
-    l, r = transform_with_rules(eojeol_, morphtags, rules=None)
+    l, r = transform_with_rules(eojeol_, morphtags, rules=None, debug=debug)
     if l is not None:
         return eojeol_, l, r
 
@@ -67,6 +69,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, rules=None, debug=False):
         return eojeol_, l, r
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
+    print(eojeol_, morphtags)
     raise ValueError(message)
 
 def preprocess(eojeol, morphtags):
@@ -105,7 +108,7 @@ def preprocess(eojeol, morphtags):
           거야 [거/NNB, 야/EF]
     """
     def is_useless(morph, tag):
-        return '(' in morph or ')' in morph or tag[0] == 'S' or tag[:1] == 'NA'
+        return '(' in morph or ')' in morph or (tag[0] == 'S' and tag != 'SN') or tag[:1] == 'NA'
 
     eojeol_ = eojeol
     morphtags_ = []
@@ -116,15 +119,22 @@ def preprocess(eojeol, morphtags):
             morphtags_.append(morphtag)
     return eojeol_, morphtags_
 
-def transform_with_rules(eojeol, morphtags, rules=None):
+def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     if to_simple_tag(morphtags[-1].tag) == 'Noun':
+        if debug:
+            print('called transform_with_rules')
         return (MorphTag(eojeol, 'Noun'), None)
     if rules is None:
         rules = _rules
-    return rules.get(eojeol, (None, None))
+    l, r = rules.get(eojeol, (None, None))
+    if l is not None and debug:
+        print('called transform_with_rules')
+    return l, r
 
 def transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
     if len(morphs) == 1:
+        if debug:
+            print('called transform_uni_morphtag')
         return (MorphTag(morphs[0], simple_tags[0]), None)
     return None, None
 
@@ -136,6 +146,8 @@ def transform_when_noun_is_changed_to_predicator(
         i = rindex(tags, target)
         if not (i > 0 and simple_tags[i-1] == 'Noun'):
             continue
+        if debug:
+            print('called transform_when_noun_is_changed_to_predicator')
         if noun_xsv_as_verb:
             return lr_form(eojeol, morphs, tags, simple_tags, i, debug)
         else:
@@ -143,19 +155,23 @@ def transform_when_noun_is_changed_to_predicator(
     return None, None
 
 def transform_normal_case(eojeol, morphs, tags, simple_tags, debug=False):
-    for target in 'Noun Pronoun Number Verb Adjective'.split():
+    for target in 'Noun Pronoun Numeral Verb Adjective'.split():
         i = rindex(simple_tags, target)
         if i >= 0:
+            if debug:
+                print('called transform_normal_case')
             return lr_form(eojeol, morphs, tags, simple_tags, i, debug)
     return None, None
 
 def transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug=False):
-    for target in 'Adverb Unk Exclamation'.split():
+    for target in 'Adverb Unk Exclamation Number Determiner'.split():
         i = rindex(simple_tags, target)
         if i < 0:
             continue
+        if debug:
+            print('called transform_exceptional_case')
         if i == len(tags) - 1:
-            return  lr_form(eojeol, morphs, tags, simple_tags, i)
+            return lr_form(eojeol, morphs, tags, simple_tags, i)
         elif simple_tags[i+1] == 'Josa':
             return lr_form(eojeol, morphs, tags, simple_tags,
                 i, debug, tag_l='Noun', tag_r='Josa')
@@ -231,15 +247,15 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
     morph_l = surface_l[:-1] +  morphs[i][-1]
 
-    if tag_l == 'Verb' or tag_l == 'Adjective' or tag_l == 'Noun':
+    if tag_l == 'Verb' or tag_l == 'Adjective' or tag_l == 'Noun' or tag_l == 'Numeral':
         morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug)
     else:
         morph_r = surface_r
 
     if debug:
-        print('surface morph tag')
-        print('{} / {} / {}'.format(surface_l, morph_l, tag_l))
-        print('{} / {} / {}'.format(surface_r, morph_r, tag_r))
+        print('[surface / morph / tag]')
+        print('[{} / {} / {}]'.format(surface_l, morph_l, tag_l))
+        print('[{} / {} / {}]'.format(surface_r, morph_r, tag_r))
 
     return MorphTag(morph_l, tag_l), MorphTag(morph_r, tag_r)
 
