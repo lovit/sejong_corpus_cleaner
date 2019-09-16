@@ -186,9 +186,9 @@ def load_a_file(path, remain_not_exists=False, debug=False):
     soup = read_txt_as_soup(path)
 
     if is_colloquial_file(path):
-        sentences = from_colloquial(soup)
+        sentences = select_sentence_from_colloquial(soup)
     else:
-        sentences = from_written(soup, path)
+        sentences = select_sentence_from_written(soup, path)
 
     sentences = [unicode_sentence(sent) for sent in sentences]
     sentences = [sent for sent in sentences if sent]
@@ -264,14 +264,14 @@ def read_txt_as_soup(path, encoding='utf-16'):
     except:
         raise ValueError('Failed to read txt: {}'.format(path))
 
-def from_colloquial(soup):
+def select_sentence_from_colloquial(soup):
     sentences = str(soup.find('text'))
     sentences = [sent.split('\t',1)[-1] for sent in sentences.split('\n')]
     soup = BeautifulSoup('\n'.join(sentences), 'lxml')
     sentences = [sent.text.strip() for sent in soup.find_all('s')]
     return sentences
 
-def from_written(soup, path):
+def select_sentence_from_written(soup, path):
     def remove_header(sent):
         sent_ = [eojeol.split('\t', 1)[-1].strip() for eojeol in sent.split('\n') if eojeol.count('\t') == 2]
         sent_ = [eojeol for eojeol in sent_ if eojeol]
