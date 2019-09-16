@@ -181,9 +181,13 @@ def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
         return (MorphTag(eojeol, 'Noun'), None)
     if rules is None:
         rules = _rules
-    l, r = rules.get(eojeol, (None, None))
-    if l is not None and debug:
+    (morph_l, tag_l), (morph_r, tag_r) = rules.get(eojeol, ((None, None), (None, None)))
+    if morph_l is None:
+        return None, None
+    if debug:
         print('called transform_with_rules')
+    l = MorphTag(morph_l, tag_l)
+    r = MorphTag(morph_r, tag_r) if morph_r is not None else None
     return l, r
 
 def transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
