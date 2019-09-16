@@ -1,6 +1,7 @@
 from collections import defaultdict
 from glob import glob
 from .loader import load_a_file
+from .lr import to_lr
 from .utils import data_dir as default_data_dir
 
 
@@ -20,14 +21,27 @@ def load_counter(file_paths, only_morpheme, convert_lr=False, xsv_as_verb=False)
                 counter[key] += 1
 
     # TODO: L-R converting
+    if convert_lr:
+        counter_ = defaultdict(int)
+        for (eojeol, morphtags), count in counter.items():
+            try:
+                eojeol_, l, r = to_lr(eojeol, morphtags, xsv_as_verb=xsv_as_verb, debug=False)
+                key = (eojeol_, l, r)
+                counter_[key] += count
+            except Exception as e:
+                print('L-R format converting error in (eojeol={}, morphtags={})'.format(eojeol, morphtags))
+                print(e, end='\n\n')
+                continue
+
+        counter = counter_
 
     if only_morpheme:
         morph_counter = defaultdict(int)
         for (eojeol, morphemes), count in counter.items():
             for morph in morphemes:
                 morph_counter[morph] += count
-        return morph_counter
-    return counter
+        return dict(morph_counter)
+    return dict(counter)
 
 def make_morpheme_table(table_file_path, data_dir=None,
     convert_lr=False, xsv_as_verb=False, corpus_types=None):
