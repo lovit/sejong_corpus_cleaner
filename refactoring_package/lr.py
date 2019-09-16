@@ -41,6 +41,10 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
         r is namedtuple of (morph, tag) in L-R format, MorphTag type
     """
 
+    # remove empty morphs
+    morphtags_raw = [mt for mt in morphtags]
+    morphtags = [mt for mt in morphtags if mt.morph]
+
     if (not noun_xsv_as_verb) and (xsv_as_root):
         separated = split_by_xsv(eojeol, morphtags, debug)
         if len(separated) == 2:
@@ -108,7 +112,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     if l is not None:
         return [(eojeol_, l, r)]
 
-    message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags)
+    message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol, morphtags_raw)
     raise ValueError(message)
 
 def split_by_xsv(eojeol, morphtags, debug=False):
@@ -122,7 +126,8 @@ def split_by_xsv(eojeol, morphtags, debug=False):
             continue
         if debug:
             print('called split_by_xsv')
-        eojeol_0 = ''.join([mt.morph for mt in morphtags[:i]])
+        eojeol_0_len = len(''.join([c for mt in morphtags[:i] for c in mt.morph if (not is_jaum(c) and not is_moum(c))]))
+        eojeol_0 = eojeol[:eojeol_0_len]
         eojeol_1 = eojeol[len(eojeol_0):]
         morphtags_0 = morphtags[:i]
         morphtags_1 = morphtags[i:]
@@ -172,9 +177,6 @@ def preprocess(eojeol, morphtags):
     """
     def is_useless(morph, tag):
         return '(' in morph or ')' in morph or (tag[0] == 'S' and tag != 'SN') or tag[:1] == 'NA'
-
-    # remove empty morphs
-    morphtags = [mt for mt in morphtags if mt.morph]
 
     eojeol_ = eojeol
     morphtags_ = []
