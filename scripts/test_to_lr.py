@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from sejong_corpus_cleaner.simplifier import eojeol_morphtag_to_lr
+from sejong_corpus_cleaner.simplifier import eojeol_morphtags_to_lr
 
 def main():
     test_sets = [
@@ -35,12 +35,13 @@ def main():
         ('됨직한', [['되', 'VV'], ['ㅁ직', 'EC'], ['하', 'XSA'], ['ㄴ', 'ETM']], 'Adjective'),
         ('느낀다"고', [('느끼', 'VV'), ('ㄴ다', 'EC'), ('"', 'SS'), ('고', 'JKQ')], 'Verb'),
         ('생각했어요', [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')], ''),
-        ('생각하다', [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')], '')
+        ('생각하다', [('생각', 'NNP'), ('하', 'XSV'), ('다', 'EF')], ''),
+        ('세워져', [('세우', 'VV'), ('어', 'EC'), ('지', 'VX'), ('어', 'EC')], '')
     ]
 
     for eojeol, morphtag, tag in test_sets:
-        result0 = eojeol_morphtag_to_lr(eojeol, morphtag, separate_xsv=False)
-        result1 = eojeol_morphtag_to_lr(eojeol, morphtag)
+        result0 = eojeol_morphtags_to_lr(eojeol, morphtag, separate_xsv=False)
+        result1 = eojeol_morphtags_to_lr(eojeol, morphtag)
         if result0 == result1:
             print('{}-> {}\nmorphtag = {}'.format(eojeol, result0[0], morphtag), end='\n\n')
         else:
