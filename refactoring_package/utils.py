@@ -161,6 +161,8 @@ def decompose(c):
         return (c, ' ', ' ')
     if (moum_begin <= i <= moum_end):
         return (' ', c, ' ')
+    if not (hangle_begin <= i <= hangle_end):
+        return (c, '', '')
     i -= hangle_begin
     cho  = i // chosung_base
     jung = ( i - cho * chosung_base ) // jungsung_base
@@ -199,14 +201,13 @@ def check_lr_transformation(eojeol, l, r, debug=False):
         >>>     print(test, check_lr_transformation(*test, debug=False))
     """
 
-    cho_l, jung_l, jong_l = decompose(l[0][-1]) # 원형 L 마지막 음절의 초/중/종성
+    # 원형 L 마지막 음절의 초/중/종성
+    cho_l, jung_l, jong_l = decompose(l[0][-1])
     # 원형 R 첫음절의 초/중/종성
     if not r:
         cho_r, jung_r, jong_r = ('', '', '')
     elif is_jaum(r[0][0]):
         cho_r, jung_r, jong_r = ('', '', r[0][0])
-    elif is_moum(r[0][0]):
-        cho_r, jung_r, jong_r = ('', r[0][0], '')
     else:
         cho_r, jung_r, jong_r = decompose(r[0][0])
 
