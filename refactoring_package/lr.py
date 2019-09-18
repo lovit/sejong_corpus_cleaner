@@ -2,7 +2,7 @@ from ._lr_rules import _rules
 from .simple_tag import to_simple_tag
 from .loader import MorphTag
 from .utils import is_jaum, is_moum, is_hangle, compose, decompose
-
+from .utils import check_lr_transformation
 
 
 def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=None, debug=False):
@@ -334,7 +334,9 @@ def rindex(tags, target):
             return n - i - 1
     return -1
 
-def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r=None):
+def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
+    tag_l=None, tag_r=None, boundary_index_shift=0):
+
     """
     Arguments
     ---------
@@ -355,6 +357,8 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
         User specified tag
     tag_r : str or None
         User specified tag
+    boundary_index_shift : int
+        The movement from return of the surface_boundary function.
 
     Returns
     -------
@@ -384,7 +388,7 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
 
         # ('세워져', [('세우', 'VV'), ('어', 'EC'), ('지', 'VX'), ('어', 'EC')], False, False),
         if is_compound_predicator():
-            return len(eojeol) - len(morphs_r_concat)
+            return len(eojeol) - len(morphs_r_concat) + boundary_index_shift
         else:
             return len(morphs_l_concat)
 
@@ -406,9 +410,19 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False, tag_l=None, tag_r
         morph_r = surface_r
 
     if debug:
+        print('Boundary  : {}'.format(b))
         print('[surface / morph / tag]')
         print('[{} / {} / {}]'.format(surface_l, morph_l, tag_l))
         print('[{} / {} / {}]'.format(surface_r, morph_r, tag_r))
+
+    if not check_lr_transformation(eojeol, (morph_l, tag_l), (morph_r, tag_r)):
+        if (b + boundary_index_shift) >= len(eojeol):
+            return None, None
+        if debug:
+            print('-- re-try with shifting boundary index +1 --')
+        l, r = lr_form(eojeol, morphs, tags, simple_tags, i, debug,
+            tag_l, tag_r, boundary_index_shift+1)
+        return l, r
 
     return MorphTag(morph_l, tag_l), MorphTag(morph_r, tag_r)
 
@@ -463,39 +477,53 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # 복원시 1음절을 2음절로 확장
     # ('다해', [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']], False, False)
     if not surface_r:
+        if debug:
+            print('  - surface_r not case')
         morph_r = w0
 
     # 활용시 2음절이 1음절이 변하는 경우 (1음절 L 과 1음절 R 이 합쳐진 경우, -하다 동사류)
     # 복원시 1음절을 2음절 (1음절 L 과 1음절 R) 로 확장
     # ('통해서', [['통하', 'VV'], ['ㅕ서', 'EC']], False, False)
     elif morph_l[-1] == '하' and (c0 == '여' or c0 == 'ㅕ' or c0 == '어' or c0 == 'ㅓ'):
+        if debug:
+            print('  - 하 + 여 case')
         morph_r = '아' + surface_r
 
     # 활용시 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류 외)
     # 복원시 1음절을 2음절 (1음절 L 과 1음절 R) 로 확장
     # ('느꼈으니', [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']], False, False)
     elif surface_r == concat_r[1:]:
+        if debug:
+            print('  - + 었 case')
         morph_r = c0 + surface_r
 
     # 활용시 첫글자가 자음인 R 이 L 에 병합된 경우
     # 복원시 R 의 자음을 surface 에 부착
     # ('예외적인', [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']], False, False)
     elif is_jaum(c0):
+        if debug:
+            print('  - + ㄴ case')
         morph_r = c0 + surface_r
 
     # 활용시 R 에 1음절이 추가된 경우
     # 복원시 R 에 추가된 음절을 포함
     # ('반가우면서도', [['반갑', 'VA'], ['면서', 'EC'], ['도', 'JX']], False, False),
     elif surface_r[1:] == concat_r:
+        if debug:
+            print('  - R 에 1음절이 추가된 경우')
         morph_r = surface_r[0] + concat_r
 
     # 활용시 1음절의 L 과 2음절의 R 이 각각 활용된 1음절과 축약된 1음절로 변형된 경우
     # 복원시 L 의 마지막 음절을 복원하고, R 의 첫음절을 두 개의 음절로 복원
     # ('거셨을', [('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')], False, False)
     elif surface_r[1:] == concat_r[2:]:
+        if debug:
+            print('  - 1음절의 L 과 2음절의 R 이 축약된 경우')
         morph_r = concat_r
 
     else:
+        if debug:
+            print('  - 그 외의 변형')
         morph_r = c0 + surface_r[1:]
 
     ##################
