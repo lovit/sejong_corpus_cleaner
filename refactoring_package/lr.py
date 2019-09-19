@@ -528,7 +528,18 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     elif concat_r[:2] == '어ㅆ':
         if debug:
             print('lemmatize_r: "(어)ㅆ다" case')
-        morph_r = '었' + concat_r[2:]
+        morph_r = '었' + surface_r
+
+    # ('봤는데,', [('보', 'VV'), ('ㅏㅆ', 'EP'), ('는데', 'EC'), (',', 'SP')], False, False)
+    elif concat_r[:2] == 'ㅏㅆ':
+        if debug:
+            print('lemmatize_r: "ㅏㅆ" case')
+        morph_r = '았' + surface_r
+
+    elif concat_r[:2] == 'ㅓㅆ':
+        if debug:
+            print('lemmatize_r: "ㅓㅆ" case')
+        morph_r = '었' + surface_r
 
     else:
         if debug:
