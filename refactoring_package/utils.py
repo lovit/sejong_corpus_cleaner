@@ -201,37 +201,38 @@ def check_lr_transformation(eojeol, l, r, debug=False):
         >>>     print(test, check_lr_transformation(*test, debug=False))
     """
 
-    cho_l, jung_l, jong_l = decompose(l[0][-1]) # 원형 L 마지막 음절의 초/중/종성
+    cho_l_canon, jung_l_canon, jong_l_canon = decompose(l[0][-1]) # 원형 L 마지막 음절의 초/중/종성
     # 원형 R 첫음절의 초/중/종성
     if not r:
-        cho_r, jung_r, jong_r = ('', '', '')
+        cho_r_canon, jung_r_canon, jong_r_canon = ('', '', '')
     elif is_jaum(r[0][0]):
-        cho_r, jung_r, jong_r = ('', '', r[0][0])
+        cho_r_canon, jung_r_canon, jong_r_canon = ('', '', r[0][0])
     elif is_moum(r[0][0]):
-        cho_r, jung_r, jong_r = ('', r[0][0], '')
+        cho_r_canon, jung_r_canon, jong_r_canon = ('', r[0][0], '')
     else:
-        cho_r, jung_r, jong_r = decompose(r[0][0])
+        cho_r_canon, jung_r_canon, jong_r_canon = decompose(r[0][0])
 
     b = len(l[0])
-    l_, r_ = eojeol[:b], eojeol[b:]
-    cho_l_, jung_l_, jong_l_ = decompose(l_[-1]) # 표현형 L 마지막 음절의 초/중/종성
-    cho_r_, jung_r_, jong_r_ = decompose(r_[0]) if r_ else ('', '', '') # 표현형 R 첫음절의 초/중/종성
+    l_surf, r_surf = eojeol[:b], eojeol[b:]
+    cho_l_surf, jung_l_surf, jong_l_surf = decompose(l_surf[-1]) # 표현형 L 마지막 음절의 초/중/종성
+    cho_r_surf, jung_r_surf, jong_r_surf = decompose(r_surf[0]) if r_surf else ('', '', '') # 표현형 R 첫음절의 초/중/종성
 
     if debug:
-        print('Surfacial form : {} + {}'.format(l_, r_))
+        print('Surfacial form : {} + {}'.format(l_surf, r_surf))
         print('Canonical form : {} + {}'.format(l, r))
-        print('cho/jung/jong of L_surf = ({}, {}, {})'.format(cho_l_, jung_l_, jong_l_))
-        print('cho/jung/jong of L_canon = ({}, {}, {})'.format(cho_l, jung_l, jong_l))
-        print('cho/jung/jong of R_surf = ({}, {}, {})'.format(cho_r_, jung_r_, jong_r_))
-        print('cho/jung/jong of R_canon = ({}, {}, {})'.format(cho_r, jung_r, jong_r))
+        print('cho/jung/jong of L_surf = ({}, {}, {})'.format(cho_l_surf, jung_l_surf, jong_l_surf))
+        print('cho/jung/jong of L_canon = ({}, {}, {})'.format(cho_l_canon, jung_l_canon, jong_l_canon))
+        print('cho/jung/jong of R_surf = ({}, {}, {})'.format(cho_r_surf, jung_r_surf, jong_r_surf))
+        print('cho/jung/jong of R_canon = ({}, {}, {})'.format(cho_r_canon, jung_r_canon, jong_r_canon))
 
     # ('어제는', ('어제', 'Noun'), ('는', 'Josa'))
     # ('어제는', ('어제', 'Noun'), None)
-    if (l_ == l[0]) and ((not r) or (r_ == r[0])):
+    if (l_surf == l[0]) and ((not r) or (r_surf == r[0])):
         return True
 
     # ('스쳐갔다', ('스쳐가', 'Verb'), ('았다', 'Eomi'))
-    if (l_[:-1] == l[0][:-1]) and (cho_l_ == cho_l) and (jong_l_ == jong_r):
+    # ('사는', ('살', 'Verb'), ('는', 'Eomi'))
+    if (l_surf[:-1] == l[0][:-1]) and (cho_l_surf == cho_l_canon):
         return True
 
     return False
