@@ -235,6 +235,18 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     if (l_surf[:-1] == l[0][:-1]) and (l_surf[-1] + r_surf == r[0]):
         return True
 
+    # ('어째서', [('어찌', 'MAG'), ('하', 'XSV'), ('아서', 'EC')], False, False)
+    #  -> ('어째서', ('어찌하', 'Verb'), ('아서', 'Eomi'))
+    if (b >= 3) and (l[0][-1] == '하') and (l[0][:-2] == l_surf[:-2]):
+        second_cho_canon, second_jung_canon, _ = decompose(l[0][-2])
+        if (second_jung_canon == 'ㅣ') and (compose(second_cho_canon, 'ㅐ', ' ') == l_surf[-2]):
+            return True
+
+    # ('퍼질고', [('퍼지르', 'VV'), ('고', 'EC')], False, False),
+    #   -> ('퍼질고', ('퍼지르', 'Verb'), ('고', 'Eomi'))
+    if (b >= 3) and (l_surf[:-2] == l[0][:-2]) and (decompose(l_surf[-2])[:1] == decompose(l[0][-2])[:1]) and (decompose(l_surf[-2])[2] == decompose(l[0][-1])[0]):
+        return True
+
     # ('스쳐갔다', ('스쳐가', 'Verb'), ('았다', 'Eomi'))
     # ('사는', ('살', 'Verb'), ('는', 'Eomi'))
     if (l_surf[:-1] == l[0][:-1]) and (cho_l_surf == cho_l_canon):
