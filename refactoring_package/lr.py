@@ -87,7 +87,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     tags = [mt.tag for  mt in morphtags]
     simple_tags = [to_simple_tag(tag) for tag in tags]
 
-    l, r = transform_uni_morphtag(eojeol_, morphs, tags, simple_tags, debug)
+    l, r = transform_short_morphtag(eojeol_, morphs, tags, simple_tags, debug)
     if l is not None:
         return [(eojeol_, l, r)]
 
@@ -250,11 +250,15 @@ def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     r = MorphTag(morph_r, tag_r) if morph_r is not None else None
     return l, r
 
-def transform_uni_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
-    if len(morphs) == 1:
+def transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
+    if len(morphs) <= 2:
         if debug:
-            print('called transform_uni_morphtag')
-        return (MorphTag(morphs[0], simple_tags[0]), None)
+            print('called transform_short_morphtag')
+        l = MorphTag(morphs[0], simple_tags[0])
+        r = None
+        if len(morphs) == 2:
+            r = MorphTag(morphs[1], simple_tags[1])
+        return l, r
     return None, None
 
 def transform_when_noun_is_changed_to_predicator(
@@ -409,16 +413,14 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
     if tag_r is None:
         tag_r = simple_tags[i+1] if i < (n-1) else None
 
-    # use last character of morphs
-    # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
-    morph_l = surface_l[:-1] +  morphs[i][-1]
+    morph_l = lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, i, debug)
 
     if tag_l in {'Verb', 'Adjective', 'Noun', 'Pronoun', 'Numeral'}:
         morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug)
     else:
         morph_r = surface_r
 
-    right_form = check_lr_transformation(eojeol, (morph_l, tag_l), (morph_r, tag_r))
+    right_form = check_lr_transformation(eojeol, (morph_l, tag_l), (morph_r, tag_r), debug)
 
     if debug:
         print('Boundary  : {}'.format(b))
@@ -437,6 +439,18 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
         return l, r
 
     return MorphTag(morph_l, tag_l), MorphTag(morph_r, tag_r)
+
+def lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, i, debug=False):
+    # use last character of morphs
+    # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
+    morph_l = surface_l[:-1] +  morphs[i][-1]
+
+    # ('어째서', [('어찌', 'MAG'), ('하', 'XSV'), ('아서', 'EC')], False, False)
+    # ('어째서', [('어찌', 'MAG'), ('하', 'XSA'), ('아서', 'EC')], False, False)
+    if (i > 0) and (morphs[i] == '하' and tags[i][:2] == 'XS') and (morphs[i-1][-1] != morph_l[-2]):
+        morph_l = morph_l[:-2] + morphs[i-1][-1] + morphs[i]
+
+    return morph_l
 
 def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=False):
     """
