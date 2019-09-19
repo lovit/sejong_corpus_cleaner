@@ -392,9 +392,8 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
                     return True
             return False
 
-        morphs_hangle = [only_hangle(morph) for morph in morphs]
-        morphs_l_concat = ''.join(morphs_hangle[:i+1])
-        morphs_r_concat = ''.join(morphs_hangle[i+1:])
+        morphs_l_concat = ''.join(morphs[:i+1])
+        morphs_r_concat = ''.join([only_hangle(m) for m in morphs[i+1:]])
 
         # ('세워져', [('세우', 'VV'), ('어', 'EC'), ('지', 'VX'), ('어', 'EC')], False, False),
         if is_compound_predicator():
@@ -414,7 +413,7 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
     morph_l = surface_l[:-1] +  morphs[i][-1]
 
-    if tag_l == 'Verb' or tag_l == 'Adjective' or tag_l == 'Noun' or tag_l == 'Numeral':
+    if tag_l in {'Verb', 'Adjective', 'Noun', 'Pronoun', 'Numeral'}:
         morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug)
     else:
         morph_r = surface_r
@@ -477,7 +476,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
 
     ###############
     # lemmatizing josa #
-    if tag_l == 'Noun':
+    if (tag_l == 'Noun') or (tag_l == 'Pronoun') or (tag_l == 'Numeral'):
         if c0 and is_jaum(c0):
             return c0 + surface_r
         else:

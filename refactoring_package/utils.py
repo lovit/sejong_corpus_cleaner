@@ -203,7 +203,7 @@ def check_lr_transformation(eojeol, l, r, debug=False):
 
     cho_l_canon, jung_l_canon, jong_l_canon = decompose(l[0][-1]) # 원형 L 마지막 음절의 초/중/종성
     # 원형 R 첫음절의 초/중/종성
-    if not r:
+    if (not r) or (not r[0]):
         cho_r_canon, jung_r_canon, jong_r_canon = ('', '', '')
     elif is_jaum(r[0][0]):
         cho_r_canon, jung_r_canon, jong_r_canon = ('', '', r[0][0])
@@ -228,6 +228,11 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     # ('어제는', ('어제', 'Noun'), ('는', 'Josa'))
     # ('어제는', ('어제', 'Noun'), None)
     if (l_surf == l[0]) and ((not r) or (r_surf == r[0])):
+        return True
+
+    # ('버려야겠다', [('버리', 'VX'), ('어야', 'EC'), ('하', 'VX'), ('겠', 'EP'), ('다', 'EF')], False, False),
+    #  -> ('버려야겠다', ('버려야하', 'Verb'), ('겠다', 'Eomi'))
+    if (l_surf[:-1] == l[0][:-1]) and (l_surf[-1] + r_surf == r[0]):
         return True
 
     # ('스쳐갔다', ('스쳐가', 'Verb'), ('았다', 'Eomi'))
