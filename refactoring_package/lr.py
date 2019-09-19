@@ -47,6 +47,8 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     morphtags_raw = [mt for mt in morphtags]
     morphtags = [mt for mt in morphtags if mt.morph]
 
+    eojeol, morphtags = preprocess0(eojeol, morphtags)
+
     if (not noun_xsv_as_verb) and (xsv_as_root):
         separated = split_by_xsv(eojeol, morphtags, debug)
         if len(separated) == 2:
@@ -68,7 +70,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     if l is not None:
         return [(eojeol_, l, r)]
 
-    eojeol_, morphtags = preprocess(eojeol, morphtags)
+    eojeol_, morphtags = preprocess1(eojeol, morphtags)
     if (not eojeol) or (not morphtags):
         if debug:
             message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
@@ -144,7 +146,15 @@ def split_by_xsv(eojeol, morphtags, debug=False):
         return [(eojeol_0, morphtags_0), (eojeol_1, morphtags_1)]
     return [(eojeol, morphtags)]
 
-def preprocess(eojeol, morphtags):
+def preprocess0(eojeol, morphtags):
+    if not (eojeol[0] in set('뭐뭔뭡') and morphtags[0].morph == '무엇'):
+        return eojeol, morphtags
+
+    replace = lambda mt: MorphTag('뭐', mt.tag) if mt.morph == '무엇' else mt
+    morphtags = [replace(mt) for mt in morphtags]
+    return eojeol, morphtags
+
+def preprocess1(eojeol, morphtags):
     """
     It removes useless morphemes from eojeol and morphtags.
 
