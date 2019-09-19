@@ -103,6 +103,9 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     l, r = transform_when_noun_is_changed_to_predicator(
         eojeol_, morphs, tags, simple_tags, noun_xsv_as_verb, debug)
     if l is not None:
+        # ('될텐데', [('되', 'VV'), ('ㄹ', 'ETM'), ('터', 'NNB'), ('이', 'VCP'), ('ㄴ데', 'EC')], False, False)
+        if (xsv_as_root or noun_xsv_as_verb) and (l.tag == 'Noun') and (r.tag == 'Adjective' or r.tag == 'Verb'):
+            r = MorphTag(r.morph, 'Josa')
         return [(eojeol_, l, r)]
 
     l, r = transform_normal_case(eojeol_, morphs, tags, simple_tags, debug)
