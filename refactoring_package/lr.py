@@ -159,7 +159,7 @@ def split_by_xsv(eojeol, morphtags, debug=False):
     return [(eojeol, morphtags)]
 
 def preprocess0(eojeol, morphtags):
-    if (eojeol[0] in set('뭐뭔뭡') and morphtags[0].morph == '무엇'):
+    if (eojeol[0] in set('뭐뭔뭡뭘') and morphtags[0].morph == '무엇'):
         replace = lambda mt: MorphTag('뭐', mt.tag) if mt.morph == '무엇' else mt
         morphtags = [replace(mt) for mt in morphtags]
 
@@ -281,11 +281,15 @@ def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     return l, r
 
 def transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
-    l = MorphTag(morphs[0], simple_tags[0])
+    morph_l = morphs[0]
+    tag_l = simple_tags[0]
+    l = MorphTag(morph_l, tag_l)
+
     if len(morphs) == 1:
         if debug:
             print('called transform_short_morphtag')
         return l, None
+
     exception_tags = {'Eomi', 'Josa', 'Adverb', 'Unk', 'Exclamation', 'Number', 'Determiner'}
     if (len(morphs) <= 2) and (not simple_tags[0] in exception_tags):
         if debug:
@@ -294,9 +298,15 @@ def transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
             tag_r = 'Josa'
         else:
             tag_r = simple_tags[1]
-        r = MorphTag(postprocessing(morphs[1]), tag_r)
+
+        surface_l = eojeol[:len(morph_l)]
+        surface_r = eojeol[len(morph_l):]
+        morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, tag_r, morphs, 0, debug)
+        r = MorphTag(postprocessing(morph_r), tag_r)
+
         if not check_lr_transformation(eojeol, l, r, debug):
             return None, None
+
         return l, r
     return None, None
 
@@ -306,7 +316,7 @@ def transform_when_noun_is_changed_to_predicator(
 
     for target in 'XSV XSA VCP VCN'.split():
         i = rindex(tags, target)
-        if not ((i > 0) and (simple_tags[i-1] == 'Noun' or simple_tags[i-1] == 'Pronoun' or simple_tags[i-1] == 'Numeral')):
+        if not ((i > 0) and (simple_tags[i-1] == 'Noun' or simple_tags[i-1] == 'Pronoun' or simple_tags[i-1] == 'Numeral' or simple_tags[i-1] == 'Adverb')):
             continue
         if debug:
             print('called transform_when_noun_is_changed_to_predicator')
@@ -441,8 +451,12 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
         # ('세워져', [('세우', 'VV'), ('어', 'EC'), ('지', 'VX'), ('어', 'EC')], False, False),
         if is_compound_predicator():
             return len(eojeol) - len(morphs_r_concat) + boundary_index_shift
-        else:
-            return len(morphs_l_concat)
+        b = len(morphs_l_concat)
+
+        # ('별로야.', [('별로', 'MAG'), ('이', 'VCP'), ('야', 'EF'), ('.', 'SF')], False, False),
+        if morphs[i] == '이' and tags[i] == 'VCP' and eojeol[b-1] == morphs[i+1][0]:
+            b -= 1
+        return b
 
     b = surface_boundary()
     if b > len(eojeol):
@@ -499,24 +513,41 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
 def lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, simple_tags, i, debug=False):
     # use last character of morphs
     # 따라 [['따르', 'VV'], ['ㅏ', 'EC']]
-    morph_l = surface_l[:-1] +  morphs[i][-1]
+    if (i > 0) and (morphs[i] == '이') and (tags[i] == 'VCP') and (morphs[i-1][-1] == surface_l[-1]):
+        if debug:
+            print('lemmatize_l: 별로야 = 별로 + (이) + 야')
+        morph_l = surface_l
+    else:
+        if debug:
+            print('lemmatize_l: default')
+        morph_l = surface_l[:-1] +  morphs[i][-1]
 
     # ('어째서', [('어찌', 'MAG'), ('하', 'XSV'), ('아서', 'EC')], False, False)
     # ('어째서', [('어찌', 'MAG'), ('하', 'XSA'), ('아서', 'EC')], False, False)
     if (i > 0) and (morphs[i] == '하' and tags[i][:2] == 'XS') and (morphs[i-1][-1] != morph_l[-2]):
+        if debug:
+            print('lemmatize_l: 어째서 = 어찌 + 하 + 아서')
         morph_l = morph_l[:-2] + morphs[i-1][-1] + morphs[i]
 
     # ('용케', [('용하', 'VA'), ('게', 'EC')], False, False)
     if (simple_tags[i] == 'Verb' or simple_tags[i] == 'Adjective') and (surface_l[-1] == '케'):
+        if debug:
+            print('lemmatize_l: 하 + 게 -> 케')
         morph_l = surface_l[:-1] + '하'
 
     # ('사용토록', [('사용', 'NNG'), ('하', 'XSV'), ('도록', 'EC')], False, False)
     if (simple_tags[i] == 'Verb' or simple_tags[i] == 'Adjective') and (surface_l[-1] == '토'):
+        if debug:
+            print('lemmatize_l: 하 + 도 -> 토')
         morph_l = surface_l[:-1] + '하'
 
     if morph_l[-1] == 'ㅎ':
+        if debug:
+            print('lemmatize_l: -ㅎ + R -> -하 + R')
         morph_l = morph_l[:-1] + '하'
     if morph_l[-1] == 'ㄱ':
+        if debug:
+            print('lemmatize_l: -ㄱ + R -> -가 + R')
         morph_l = morph_l[:-1] + '가'
 
     return morph_l
@@ -562,9 +593,22 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, tag_r, morphs, i, 
     # lemmatizing josa #
     if ((tag_l == 'Noun') or (tag_l == 'Pronoun') or (tag_l == 'Numeral')) and (tag_r == 'Josa'):
         if c0 and is_jaum(c0):
+            if debug:
+                print('lemmatize_r: Noun + 자음')
             return c0 + surface_r
         elif not (len(concat_r) >= 3 and c0 == '이' and is_jaum(concat_r[1])):
-            return surface_r
+            if debug:
+                print('lemmatize_r : Noun + Josa')
+            # ('뭘로', [('무엇', 'NP'), ('으로', 'JKB')], False, False),
+            morph_r = surface_r
+            _, _, jong_canon = decompose(morph_l[-1])
+            _, _, jong_surf = decompose(surface_l[-1])
+            if (jong_canon == ' ') and (jong_surf != ' '):
+                if morph_r and morph_r[0] != jong_surf:
+                    morph_r = jong_surf + morph_r
+                elif not morph_r:
+                    morph_r = jong_surf
+            return morph_r
 
     ###############
     # lemmatizing eomis #
