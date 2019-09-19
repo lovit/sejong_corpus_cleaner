@@ -263,4 +263,12 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     if (l_surf[:-1] == l[0][:-1]) and (cho_l_surf == cho_l_canon):
         return True
 
+    # ('생각케', [('생각', 'NNG'), ('하', 'XSV'), ('게', 'EC')], False, False),
+    if (l[0][-1] == '하') and (r[0][0] == '게') and (l_surf[-1] == '케'):
+        return True
+
+    # ('사용토록', [('사용', 'NNG'), ('하', 'XSV'), ('도록', 'EC')], False, False),
+    if (l[0][-1] == '하') and (r[0][0] == '도') and (l_surf[-1] == '토'):
+        return True
+
     return False
