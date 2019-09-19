@@ -272,10 +272,19 @@ def check_lr_transformation(eojeol, l, r, debug=False):
         return True
 
     # ('이뤄진', [('이루어지', 'VV'), ('ㄴ', 'ETM')], False, False)
+    # ('이뤄진다고', [('이루어지', 'VV'), ('ㄴ다고', 'EC')], False, False)
     if len(l[0]) >= 3 and is_jaum(r[0][0]):
         cho3, jung3, jong3 = decompose(l[0][-3])
         cho2, jung2, jong2 = decompose(l[0][-2])
         cho1, jung1, jong1 = decompose(l[0][-1])
-        if jung3 == 'ㅜ' and jong3 == ' ' and l[0][-2] == '어' and compose(cho3, 'ㅝ', ' ') == l_surf[-2] and compose(cho1, jung1, r[0][0]) == l_surf[-1]:
-            return True
+        comb_boundary = compose(cho1, jung1, r[0][0])
+        comb_l = compose(cho3, 'ㅝ', ' ')
+        if jung3 == 'ㅜ' and jong3 == ' ' and l[0][-2] == '어' and comb_l == l_surf[-2] or comb_l == l_surf[-3]:
+            # ('이뤄진', [('이루어지', 'VV'), ('ㄴ', 'ETM')], False, False)
+            if comb_boundary == l_surf[-1]:
+                return True
+            # ('이뤄진다고', [('이루어지', 'VV'), ('ㄴ다고', 'EC')], False, False)
+            if (comb_boundary == l_surf[-2]) and (len(r[0]) >= 2) and (l_surf[-1] == r[0][1]):
+                return True
+
     return False

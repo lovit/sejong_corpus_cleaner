@@ -299,6 +299,10 @@ def transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
         else:
             tag_r = simple_tags[1]
 
+        if check_lr_transformation(eojeol, (morph_l, tag_l), (morphs[1], simple_tags[1]), debug):
+            r = MorphTag(morphs[1], simple_tags[1])
+            return l, r
+
         surface_l = eojeol[:len(morph_l)]
         surface_r = eojeol[len(morph_l):]
         morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, tag_r, morphs, 0, debug)
