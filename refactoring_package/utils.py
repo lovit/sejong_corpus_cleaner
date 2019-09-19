@@ -271,4 +271,11 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     if (l[0][-1] == '하') and (r[0][0] == '도') and (l_surf[-1] == '토'):
         return True
 
+    # ('이뤄진', [('이루어지', 'VV'), ('ㄴ', 'ETM')], False, False)
+    if len(l[0]) >= 3 and is_jaum(r[0][0]):
+        cho3, jung3, jong3 = decompose(l[0][-3])
+        cho2, jung2, jong2 = decompose(l[0][-2])
+        cho1, jung1, jong1 = decompose(l[0][-1])
+        if jung3 == 'ㅜ' and jong3 == ' ' and l[0][-2] == '어' and compose(cho3, 'ㅝ', ' ') == l_surf[-2] and compose(cho1, jung1, r[0][0]) == l_surf[-1]:
+            return True
     return False
