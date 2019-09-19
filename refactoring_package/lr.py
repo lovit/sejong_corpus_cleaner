@@ -521,6 +521,12 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
             print('  - 1음절의 L 과 2음절의 R 이 축약된 경우')
         morph_r = concat_r
 
+    # ('세웠다', [('세우', 'VV'), ('어', 'EC'), ('ㅆ다', 'EF')], False, False)
+    elif concat_r[:2] == '어ㅆ':
+        if debug:
+            print('  - R 의 (어)ㅆ다')
+        morph_r = '었' + concat_r[2:]
+
     else:
         if debug:
             print('  - 그 외의 변형')
