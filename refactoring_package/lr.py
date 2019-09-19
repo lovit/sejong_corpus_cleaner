@@ -136,13 +136,16 @@ def split_by_xsv(eojeol, morphtags, debug=False):
         # if not (i > 0 and (simple_tags[i-1] == 'Noun') or (simple_tags[i-1] == 'Eomi')):
         if not (i > 0 and simple_tags[i-1] == 'Noun'):
             continue
-        if debug:
-            print('called split_by_xsv')
         eojeol_0_len = len(''.join([c for mt in morphtags[:i] for c in mt.morph if (not is_jaum(c) and not is_moum(c))]))
         eojeol_0 = eojeol[:eojeol_0_len]
         eojeol_1 = eojeol[len(eojeol_0):]
         morphtags_0 = morphtags[:i]
         morphtags_1 = morphtags[i:]
+        # ('문화다.', [('문화', 'NNG'), ('이', 'VCP'), ('다', 'EF'), ('.', 'SF')], True, False),
+        if (eojeol_1) and (eojeol_1[0] == morphtags_1[1].morph[0]):
+            continue
+        if debug:
+            print('called split_by_xsv')
         if (not eojeol_0) or (not eojeol_1) or (not morphtags_0) or (not morphtags_1):
             message = """Failed to split morphtags by xsv. eojeol={}, morphtags={}
             -> eojeol_0 = ({}), morphtags_0 = ({})
@@ -153,11 +156,14 @@ def split_by_xsv(eojeol, morphtags, debug=False):
     return [(eojeol, morphtags)]
 
 def preprocess0(eojeol, morphtags):
-    if not (eojeol[0] in set('뭐뭔뭡') and morphtags[0].morph == '무엇'):
-        return eojeol, morphtags
+    if (eojeol[0] in set('뭐뭔뭡') and morphtags[0].morph == '무엇'):
+        replace = lambda mt: MorphTag('뭐', mt.tag) if mt.morph == '무엇' else mt
+        morphtags = [replace(mt) for mt in morphtags]
 
-    replace = lambda mt: MorphTag('뭐', mt.tag) if mt.morph == '무엇' else mt
-    morphtags = [replace(mt) for mt in morphtags]
+    # "네것을" = "너/NP + 의/JKG + 것/NNB + 을/JKO (1)"
+    if (eojeol[0] == '네' or eojeol[0] == '내' or eojeol[0] == '제') and (morphtags[0].tag == 'NP'):
+        morphtags = [MorphTag(eojeol[0], 'NP')] + morphtags[2:]
+
     return eojeol, morphtags
 
 def preprocess1(eojeol, morphtags):
@@ -251,6 +257,8 @@ def transform_with_rules0(eojeol, morphtags, debug=False):
         return MorphTag('어찌하', 'Verb'), MorphTag('알'+eojeol[2:], 'Eomi')
     if eojeol[:2] == '제것':
         return MorphTag('제것', 'Noun'), MorphTag(eojeol[2:], 'Josa')
+    if eojeol[:3] == '이뤄졌':
+        return MorphTag('이뤄지', 'Verb'), MorphTag(eojeol[3:], 'Eomi')
     return None, None
 
 def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
@@ -443,6 +451,9 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
         tag_l = simple_tags[i]
     if tag_r is None:
         tag_r = simple_tags[i+1] if i < (n-1) else None
+        # ('문화다.', [('문화', 'NNG'), ('이', 'VCP'), ('다', 'EF'), ('.', 'SF')], False, False),
+        if (tags[i+1] == 'VCP') and (surface_r and surface_r[0] == morphs[i+2][0]):
+            tag_r = 'Josa'
 
     morph_l = lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, i, debug)
 
@@ -480,6 +491,11 @@ def lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, i, debug=False):
     # ('어째서', [('어찌', 'MAG'), ('하', 'XSA'), ('아서', 'EC')], False, False)
     if (i > 0) and (morphs[i] == '하' and tags[i][:2] == 'XS') and (morphs[i-1][-1] != morph_l[-2]):
         morph_l = morph_l[:-2] + morphs[i-1][-1] + morphs[i]
+
+    if morph_l[-1] == 'ㅎ':
+        morph_l = morph_l[:-1] + '하'
+    if morph_l[-1] == 'ㄱ':
+        morph_l = morph_l[:-1] + '가'
 
     return morph_l
 
