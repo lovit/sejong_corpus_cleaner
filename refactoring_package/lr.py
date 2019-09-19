@@ -75,7 +75,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
         return [(eojeol_, l, r)]
 
     if (not noun_xsv_as_verb) and (xsv_as_root):
-        separated = split_by_xsv(eojeol, morphtags, debug)
+        separated = split_by_xsv(eojeol_, morphtags, debug)
         if len(separated) == 2:
             (eojeol_0, morphtags_0), (eojeol_1, morphtags_1) = separated
             eojeol_0_, l_0, r_0 = to_lr(eojeol_0, morphtags_0, noun_xsv_as_verb=False,
