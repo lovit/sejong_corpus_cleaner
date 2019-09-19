@@ -230,6 +230,13 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     if (l_surf == l[0]) and ((not r) or (r_surf == r[0])):
         return True
 
+    # ('당키나', [('당하', 'VA'), ('기', 'ETN'), ('나', 'JX')], False, False)
+    #   -> ('당키나', ('당하', 'Adjective') + ('기나', 'Eomi'))
+    # ('당치도', [('당하', 'VA'), ('지', 'EC'), ('도', 'JX')], False, False)
+    #   -> ('당치도', ('당하', 'Adjective') + ('지도', 'Eomi'))
+    if l_surf[-1] in {'키', '치'} and l[0][-1] == '하' and r[0][0] in {'기', '지'} and (l[1] == 'Verb' or l[1] == 'Adjective'):
+        return True
+
     # ('버려야겠다', [('버리', 'VX'), ('어야', 'EC'), ('하', 'VX'), ('겠', 'EP'), ('다', 'EF')], False, False),
     #  -> ('버려야겠다', ('버려야하', 'Verb'), ('겠다', 'Eomi'))
     if (l_surf[:-1] == l[0][:-1]) and (l_surf[-1] + r_surf == r[0]):
@@ -238,9 +245,13 @@ def check_lr_transformation(eojeol, l, r, debug=False):
     # ('어째서', [('어찌', 'MAG'), ('하', 'XSV'), ('아서', 'EC')], False, False)
     #  -> ('어째서', ('어찌하', 'Verb'), ('아서', 'Eomi'))
     if (b >= 3) and (l[0][-1] == '하') and (l[0][:-2] == l_surf[:-2]):
+        second_cho_surf, second_jung_surf, second_jong_surf = decompose(l_surf[-2])
         second_cho_canon, second_jung_canon, _ = decompose(l[0][-2])
-        if (second_jung_canon == 'ㅣ') and (compose(second_cho_canon, 'ㅐ', ' ') == l_surf[-2]):
+        _, _, first_jong_r_surf = decompose(r[0][0])
+        if (second_jung_canon == 'ㅣ') and (second_jong_surf == first_jong_r_surf) and (second_cho_surf == second_cho_canon):
             return True
+        #if (second_jung_canon == 'ㅣ') and (compose(second_cho_canon, 'ㅐ', ' ') == l_surf[-2]):
+        #    return True
 
     # ('퍼질고', [('퍼지르', 'VV'), ('고', 'EC')], False, False),
     #   -> ('퍼질고', ('퍼지르', 'Verb'), ('고', 'Eomi'))

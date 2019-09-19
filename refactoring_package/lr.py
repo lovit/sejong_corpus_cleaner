@@ -1,3 +1,5 @@
+import re
+
 from ._lr_rules import _rules
 from .simple_tag import to_simple_tag
 from .loader import MorphTag
@@ -49,16 +51,6 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
 
     eojeol, morphtags = preprocess0(eojeol, morphtags)
 
-    if (not noun_xsv_as_verb) and (xsv_as_root):
-        separated = split_by_xsv(eojeol, morphtags, debug)
-        if len(separated) == 2:
-            (eojeol_0, morphtags_0), (eojeol_1, morphtags_1) = separated
-            eojeol_0_, l_0, r_0 = to_lr(eojeol_0, morphtags_0, noun_xsv_as_verb=False,
-                xsv_as_root=False, rules=rules, debug=debug)[0]
-            eojeol_1_, l_1, r_1 = to_lr(eojeol_1, morphtags_1, noun_xsv_as_verb=False,
-                xsv_as_root=False, rules=rules, debug=debug)[0]
-            return [(eojeol_0_, l_0, r_0), (eojeol_1_, l_1, r_1)]
-
     # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], False, False),
     # ('6.25의', [('6', 'SN'), ('.', 'SF'), ('25', 'SN'), ('의', 'JKO')], False, False),
     eojeol_, l, r = transform_symbol_noun(eojeol, morphtags, debug)
@@ -77,6 +69,20 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
                 eojeol, morphtags)
             raise ValueError(message)
         return [(eojeol_, None, None)]
+
+    l, r = transform_with_rules0(eojeol, morphtags, debug=False)
+    if l is not None:
+        return [(eojeol_, l, r)]
+
+    if (not noun_xsv_as_verb) and (xsv_as_root):
+        separated = split_by_xsv(eojeol, morphtags, debug)
+        if len(separated) == 2:
+            (eojeol_0, morphtags_0), (eojeol_1, morphtags_1) = separated
+            eojeol_0_, l_0, r_0 = to_lr(eojeol_0, morphtags_0, noun_xsv_as_verb=False,
+                xsv_as_root=False, rules=rules, debug=debug)[0]
+            eojeol_1_, l_1, r_1 = to_lr(eojeol_1, morphtags_1, noun_xsv_as_verb=False,
+                xsv_as_root=False, rules=rules, debug=debug)[0]
+            return [(eojeol_0_, l_0, r_0), (eojeol_1_, l_1, r_1)]
 
     l, r = transform_with_rules(eojeol_, morphtags, rules=None, debug=debug)
     if l is not None:
@@ -192,6 +198,9 @@ def preprocess1(eojeol, morphtags):
     def is_useless(morph, tag):
         return '(' in morph or ')' in morph or (tag[0] == 'S' and tag != 'SN') or tag[:1] == 'NA'
 
+    pattern = re.compile('[^ㄱ-ㅎㅏ-ㅣ가-힣0-9a-zA-Z.,·-]')
+    normalize = lambda s:pattern.sub('', s)
+
     eojeol_ = eojeol
     morphtags_ = []
     for morphtag in morphtags:
@@ -199,6 +208,7 @@ def preprocess1(eojeol, morphtags):
             eojeol_ = eojeol_.replace(morphtag.morph, '', 1)
         else:
             morphtags_.append(morphtag)
+    eojeol_ = normalize(eojeol_)
     return eojeol_, morphtags_
 
 def transform_symbol_noun(eojeol, morphtags, debug=False):
@@ -234,6 +244,15 @@ def transform_foreign_noun(eojeol, morphtags, debug=False):
             return eojeol, MorphTag(morph_l, 'Noun'), MorphTag(morph_r, simple_tags[1])
     return eojeol, None, None
 
+def transform_with_rules0(eojeol, morphtags, debug=False):
+    if eojeol[:2] == '어쨌':
+        return MorphTag('어찌하', 'Verb'), MorphTag('았'+eojeol[2:], 'Eomi')
+    if eojeol[:2] == '어쩔':
+        return MorphTag('어찌하', 'Verb'), MorphTag('알'+eojeol[2:], 'Eomi')
+    if eojeol[:2] == '제것':
+        return MorphTag('제것', 'Noun'), MorphTag(eojeol[2:], 'Josa')
+    return None, None
+
 def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     if to_simple_tag(morphtags[-1].tag) == 'Noun':
         if debug:
@@ -251,13 +270,22 @@ def transform_with_rules(eojeol, morphtags, rules=None, debug=False):
     return l, r
 
 def transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug=False):
-    if len(morphs) <= 2:
+    l = MorphTag(morphs[0], simple_tags[0])
+    if len(morphs) == 1:
         if debug:
             print('called transform_short_morphtag')
-        l = MorphTag(morphs[0], simple_tags[0])
-        r = None
-        if len(morphs) == 2:
-            r = MorphTag(morphs[1], simple_tags[1])
+        return l, None
+    exception_tags = {'Eomi', 'Josa', 'Adverb', 'Unk', 'Exclamation', 'Number', 'Determiner'}
+    if (len(morphs) <= 2) and (not simple_tags[0] in exception_tags):
+        if debug:
+            print('called transform_short_morphtag')
+        if simple_tags[0] in {'Noun', 'Pronoun', 'Numeral'}:
+            tag_r = 'Josa'
+        else:
+            tag_r = simple_tags[1]
+        r = MorphTag(postprocessing(morphs[1]), tag_r)
+        if not check_lr_transformation(eojeol, l, r, debug):
+            return None, None
         return l, r
     return None, None
 
@@ -406,6 +434,9 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
             return len(morphs_l_concat)
 
     b = surface_boundary()
+    if b > len(eojeol):
+        return None, None
+
     surface_l, surface_r = eojeol[:b], eojeol[b:]
 
     if tag_l is None:
@@ -569,9 +600,9 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
             print('lemmatize_r: 그 외의 변형')
         morph_r = c0 + surface_r[1:]
 
-    ##################
-    # postprocessing #
+    return postprocessing(morph_r)
 
+def postprocessing(morph_r):
     # R 의 첫글자가 모음인 경우
     # ('통해서', [['통하', 'VV'], ['ㅏ서', 'EC']], False, False)
     if len(morph_r) > 0 and is_moum(morph_r[0]):
