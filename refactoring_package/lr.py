@@ -409,13 +409,16 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
     else:
         morph_r = surface_r
 
+    right_form = check_lr_transformation(eojeol, (morph_l, tag_l), (morph_r, tag_r))
+
     if debug:
         print('Boundary  : {}'.format(b))
         print('[surface / morph / tag]')
         print('[{} / {} / {}]'.format(surface_l, morph_l, tag_l))
         print('[{} / {} / {}]'.format(surface_r, morph_r, tag_r))
+        print('L-R checker : {}'.format(right_form))
 
-    if not check_lr_transformation(eojeol, (morph_l, tag_l), (morph_r, tag_r)):
+    if not right_form:
         if (b + boundary_index_shift) >= len(eojeol):
             return None, None
         if debug:
@@ -478,7 +481,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('다해', [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']], False, False)
     if not surface_r:
         if debug:
-            print('  - surface_r not case')
+            print('lemmatize_r: surface_r not case')
         morph_r = w0
 
     # 활용시 2음절이 1음절이 변하는 경우 (1음절 L 과 1음절 R 이 합쳐진 경우, -하다 동사류)
@@ -486,7 +489,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('통해서', [['통하', 'VV'], ['ㅕ서', 'EC']], False, False)
     elif morph_l[-1] == '하' and (c0 == '여' or c0 == 'ㅕ' or c0 == '어' or c0 == 'ㅓ'):
         if debug:
-            print('  - 하 + 여 case')
+            print('lemmatize_r: "- 하 + 여" case')
         morph_r = '아' + surface_r
 
     # 활용시 2음절이 1음절이 변하는 경우 (2음절 R 이 1음절로 축약된 경우, -하다 동사류 외)
@@ -494,7 +497,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('느꼈으니', [['느끼', 'VV'], ['었', 'EP'], ['으니', 'EC']], False, False)
     elif surface_r == concat_r[1:]:
         if debug:
-            print('  - + 었 case')
+            print('lemmatize_r: "+ 었" case')
         morph_r = c0 + surface_r
 
     # 활용시 첫글자가 자음인 R 이 L 에 병합된 경우
@@ -502,7 +505,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('예외적인', [['예외', 'NNG'], ['적', 'XSN'], ['이', 'VCP'], ['ᆫ', 'ETM']], False, False)
     elif is_jaum(c0):
         if debug:
-            print('  - + ㄴ case')
+            print('lemmatize_r: "+ ㄴ" case')
         morph_r = c0 + surface_r
 
     # 활용시 R 에 1음절이 추가된 경우
@@ -510,7 +513,7 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('반가우면서도', [['반갑', 'VA'], ['면서', 'EC'], ['도', 'JX']], False, False),
     elif surface_r[1:] == concat_r:
         if debug:
-            print('  - R 에 1음절이 추가된 경우')
+            print('lemmatize_r: R 에 1음절이 추가된 경우')
         morph_r = surface_r[0] + concat_r
 
     # 활용시 1음절의 L 과 2음절의 R 이 각각 활용된 1음절과 축약된 1음절로 변형된 경우
@@ -518,18 +521,18 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, morphs, i, debug=F
     # ('거셨을', [('걸', 'VV'), ('시', 'EP'), ('었', 'EP'), ('을', 'ETM')], False, False)
     elif surface_r[1:] == concat_r[2:]:
         if debug:
-            print('  - 1음절의 L 과 2음절의 R 이 축약된 경우')
+            print('lemmatize_r: 1음절의 L 과 2음절의 R 이 축약된 경우')
         morph_r = concat_r
 
     # ('세웠다', [('세우', 'VV'), ('어', 'EC'), ('ㅆ다', 'EF')], False, False)
     elif concat_r[:2] == '어ㅆ':
         if debug:
-            print('  - R 의 (어)ㅆ다')
+            print('lemmatize_r: "(어)ㅆ다" case')
         morph_r = '었' + concat_r[2:]
 
     else:
         if debug:
-            print('  - 그 외의 변형')
+            print('lemmatize_r: 그 외의 변형')
         morph_r = c0 + surface_r[1:]
 
     ##################
