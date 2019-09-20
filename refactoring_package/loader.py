@@ -105,14 +105,21 @@ class Sentence:
 
         assert len(list_of_eojeol) == len(list_of_morphtags)
 
-        def exist_empty_item(seq):
-            return len([item for item in seq if len(item) == 0]) > 0
+        def preprocessing(list_of_eojeol, list_of_morphtags):
+            eojeols_ = []
+            morphtags_ = []
+            for eojeol, morphtags in zip(list_of_eojeol, list_of_morphtags):
+                if (not eojeol) and ((not morphtags) or (morphtags[0] is None)):
+                    continue
+                if eojeol and (morphtags and morphtags[0] is not None):
+                    eojeols_.append(eojeol)
+                    morphtags_.append(morphtags)
+                else:
+                    raise ValueError('Exist empty item in sequence\neojeols = {}\nmorphtags = {}'.format(
+                        list_of_eojeol, list_of_morphtags))
+            return eojeols_, morphtags_
 
-        if exist_empty_item(list_of_eojeol) or exist_empty_item(list_of_morphtags):
-            raise ValueError('Exist empty item in sequence')
-
-        self.eojeols = list_of_eojeol
-        self.morphtags = list_of_morphtags
+        self.eojeols, self.morphtags = preprocessing(list_of_eojeol, list_of_morphtags)
 
     def __iter__(self):
         for eojeol, morphtags in zip(self.eojeols, self.morphtags):
