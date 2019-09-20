@@ -68,7 +68,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
             message = 'Filtered by preprocessor. eojeol = {}, morphtags = {}'.format(
                 eojeol, morphtags)
             raise ValueError(message)
-        return [(eojeol, None, None)]
+        return [(eojeol, None, None, [], -1)]
 
     l, r, b = transform_with_rules0(eojeol, morphtags, debug=False)
     if l is not None:
