@@ -45,10 +45,6 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
         r is namedtuple of (morph, tag) in L-R format, MorphTag type
     """
 
-    # remove empty morphs
-    morphtags_raw = [mt for mt in morphtags]
-    morphtags = [mt for mt in morphtags if mt.morph]
-
     eojeol, morphtags = preprocess0(eojeol, morphtags)
 
     # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], False, False),
@@ -159,6 +155,10 @@ def split_by_xsv(eojeol, morphtags, debug=False):
     return [(eojeol, morphtags)]
 
 def preprocess0(eojeol, morphtags):
+    # remove empty morphs
+    morphtags_raw = [mt for mt in morphtags]
+    morphtags = [mt for mt in morphtags if mt.morph]
+
     if (eojeol[0] in set('뭐뭔뭡뭘') and morphtags[0].morph == '무엇'):
         replace = lambda mt: MorphTag('뭐', mt.tag) if mt.morph == '무엇' else mt
         morphtags = [replace(mt) for mt in morphtags]
