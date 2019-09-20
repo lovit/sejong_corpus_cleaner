@@ -23,17 +23,19 @@ def main():
     output_dir = args.output_dir
     input_file_type = args.input_file_type
     if input_file_type == 'all':
-        input_file_type = None
+        input_file_type_ = None
+    else:
+        input_file_type_ = input_file_type
     corpus_type = args.corpus_type
     num_sents = args.num_sents
 
-    paths = get_data_paths(input_file_type, input_dir)
+    paths = get_data_paths(input_file_type_, input_dir)
     if not paths:
         raise ValueError('Check your input directory')
 
     sents = Sentences(paths, num_sents=num_sents)
 
-    suffix = '' if num_sents < 0 else '_{}'.format(num_sents)
+    suffix = '_{}{}'.format(input_file_type, '' if num_sents < 0 else '_{}'.format(num_sents))
     path = '{}/corpus_{}{}.txt'.format(output_dir, corpus_type, suffix)
 
     if corpus_type == 'sejong':

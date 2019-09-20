@@ -50,11 +50,11 @@ python build_corpus.py  --corpus_type type3
 
 | Argument | Type | Default value | Help |
 | --- | --- | --- | --- |
-| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| input_dir | str | '../data/raw/' | Raw Sejong corpus directory |
 | output_dir | str | '../data/clean/' | Processed corpus directory |
-| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
-| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
-| num_sents | int | -1, | Maximum number of sentences |
+| input_file_type | str | 'all' | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong' | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1 | Maximum number of sentences |
 
 테스트 용으로 Type 2 형식으로 100 문장의 말뭉치를 만들기 위해서는 다음을 실행합니다.
 
@@ -105,14 +105,12 @@ cat counter_type1_morpheme.txt
 
 | Argument | Type | Default value | Help |
 | --- | --- | --- | --- |
-| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| input_dir | str | '../data/raw/' | Raw Sejong corpus directory |
 | output_dir | str | '../data/clean/' | Processed corpus directory |
-| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
-| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
-| num_sents | int | -1, | Maximum number of sentences |
+| input_file_type | str | 'all' | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong' | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1 | Maximum number of sentences |
 | only_morphemes | str | False | store_true, Count only morphemes |
-
-
 
 
 ## 패키지 사용법
@@ -532,6 +530,21 @@ counter = make_counter(sents, convert_lr=True)
 counter = make_counter(sents, convert_lr=True, xsv_as_root=True)
 ```
 
+## 데이터 정제 오류율
+
+세종 말뭉치는 479 개의 파일에 1,021,527 개의 문장이 포함되어 있습니다.
+
+| 작업 | 입력 데이터 크기 | 고유 오류 개수 (빈도수 기준 비율) |
+| --- | --- | --- |
+| 원 파일에서 Sentence 형식으로 로딩 | 1,021,527 문장 | 33,385 문장 (3.27 %) |
+| 세종 말뭉치 문장을 type 1 형식으로 변형 | 1,021,527 문장 | 1,720 문장 (0.168 %) |
+| 세종 말뭉치 문장을 type 2 형식으로 변형 | 1,021,527 문장 | 1,949 문장 (0.191 %) |
+| 세종 말뭉치 문장을 type 3 형식으로 변형 | 1,021,527 문장 | 2,198 문장 (0.215 %) |
+| 세종 말뭉치 어절을 type 1 형식으로 변형 | 1,601,367 어절 | 1,121 어절 (0.015 %) |
+| 세종 말뭉치 어절을 type 2 형식으로 변형 | 1,601,367 어절 | 1,203 어절 (0.017 %) |
+| 세종 말뭉치 어절을 type 3 형식으로 변형 | 1,601,367 어절 | 1,546 어절 (0.020 %) |
+
+
 ## 코드 내 주요 변수명
 
 | Variable name | meaning |
@@ -542,6 +555,7 @@ counter = make_counter(sents, convert_lr=True, xsv_as_root=True)
 | morphtag | (morph, tag) |
 | morphtags | list of (morph, tag) |
 | sentence (or sent, for short) | list of (eojeol, morphtags) |
+
 
 ## Requirements
 
