@@ -146,6 +146,7 @@ class Sentence:
             return self.morphtags
         return [mt for mts in self.morphtags for mt in mts]
 
+
 class Sentences:
     """
     Arguments
@@ -154,28 +155,57 @@ class Sentences:
         Sejong corpus file paths
     verbose : Boolean
         If True, it shows progress of iteration
+    processed : Boolean
+        If False, it loads raw Sejong corpus file
+        Else, it loads processed corpus file
+    num_sents : int
+        Maximum number of sentences
+        If the value is negative, it loads all sentences
     """
-    def __init__(self, file_paths=None, verbose=True):
+    def __init__(self, file_paths=None, verbose=True, processed=False, num_sents=-1):
         if file_paths is None:
             file_paths = get_data_paths()
+        if isinstance(file_paths, str):
+            file_paths = [file_paths]
 
         self.file_paths = file_paths
         self.verbose = verbose
+        self.processed = processed
+        self.num_sents = num_sents
 
     def __iter__(self):
-        n_sents_, n_errors_ = 0, 0
+        n_sents_, n_errors_, n_iters = 0, 0, 0
         for i, path in enumerate(self.file_paths):
-            sents, n_errors = load_a_file(path, remain_dummy_morpheme=False)
-            n_sents_ += len(sents)
-            n_errors_ += n_errors
+            if self.num_sents > 0 and self.num_sents <= n_iters:
+                break
+
+            if not self.processed:
+                sents, n_errors = load_a_sejong_file(path,
+                    remain_dummy_morpheme=False, num_sents=self.num_sents)
+                n_sents_ += len(sents)
+                n_errors_ += n_errors
+            else:
+                sents = load_a_sentences_file(path, num_sents=self.num_sents)
+                n_sents_ += len(sents)
+
             for sent in sents:
                 yield sent
+                n_iters += 1
+                if self.num_sents > 0 and self.num_sents <= n_iters:
+                    break
+
             if self.verbose:
                 args = (n_sents_, n_errors_, i+1, len(self.file_paths))
                 print('\rIterating {} sents with {} errors from {} / {} files'.format(*args), end='')
         if self.verbose:
             args = (n_sents_, n_errors_, len(self.file_paths), ' '*20)
             print('\rIterated {} sents with {} errors from {} files{}'.format(*args))
+
+    def __len__(self):
+        i = -1
+        for i, _ in enumerate(self.__iter__()):
+            continue
+        return i + 1
 
 
 def check_corpus_type(corpus_types):
@@ -201,7 +231,47 @@ def get_data_paths(corpus_types=None, data_dir=None):
         raise ValueError('File not founded from {}'.format(data_dir))
     return paths
 
-def load_a_file(path, remain_dummy_morpheme=False, debug=False):
+def load_a_sentences_file(path, num_sents=-1):
+    """
+    Arguments
+    ---------
+    path : str
+        Sentences format file path
+    num_sents : int
+        Maximum number of sentences
+        If the value is negative, it loads all sentences
+
+    Returns
+    -------
+    sents : list of Sentence
+    """
+    sents = []
+    with open(path, encoding='utf-8') as f:
+        eojeols = []
+        list_of_morphtags = []
+        for line in f:
+            if num_sents > 0 and len(sents) >= num_sents:
+                eojeols = []
+                break
+            line = line.strip()
+            if not line and eojeols:
+                sent = Sentence(eojeols, list_of_morphtags)
+                sents.append(sent)
+                eojeols = []
+                list_of_morphtags = []
+                continue
+            if not line:
+                continue
+            eojeol, morphtags = line.split('\t')
+            morphtags = [MorphTag(*mt.rsplit('/', 1)) for mt in morphtags.split(' + ')]
+            eojeols.append(eojeol)
+            list_of_morphtags.append(morphtags)
+    if eojeols:
+        sent = Sentence(eojeols, list_of_morphtags)
+        sents.append(sent)
+    return sents
+
+def load_a_sejong_file(path, remain_dummy_morpheme=False, debug=False, num_sents=-1):
     """
     Argument
     --------
@@ -214,6 +284,9 @@ def load_a_file(path, remain_dummy_morpheme=False, debug=False):
     debug : Boolean
         If True, it shows exception case
         Default is False
+    num_sents : int
+        Maximum number of sentences
+        If the value is negative, it loads all sentences
 
     Returns
     -------
@@ -247,7 +320,7 @@ def load_a_file(path, remain_dummy_morpheme=False, debug=False):
     Usage
     -----
         $ path = '../data/raw/written/BTAA0001.txt'
-        $ sentences, n_errors = load_a_file(path)
+        $ sentences, n_errors = load_a_sejong_file(path)
     """
     soup = read_txt_as_soup(path)
 
@@ -269,6 +342,8 @@ def load_a_file(path, remain_dummy_morpheme=False, debug=False):
 
     sentences_ = []
     for i, sent in enumerate(sentences):
+        if num_sents > 0 and len(sentences_) >= num_sents:
+            break
         try:
             sent = as_sentence_instance(sent, remain_dummy_morpheme)
             if check_sejong_tagset(sent):
