@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 sep = os.path.sep
@@ -31,13 +32,13 @@ def check_encoding(paths):
     if isinstance(paths, str):
         paths = [paths]
 
-    # OSX
-    if os.environ['_system_name'] == 'OSX':
-        encodings = [subprocess.getstatusoutput("file -I %s" % path)[1] for path in paths]
-    # Ubuntu
-    else:
+    # OS
+    if os.name == 'posix':
         encodings = [subprocess.getstatusoutput("file %s" % path)[1] for path in paths]
-    return encodings
+        return encodings
+    else:
+        print('Not support to {}'.format(os.name))
+        return None
 
 unicode_mapper = {
   'ᆨ': 'ㄱ', # 4520
