@@ -59,13 +59,13 @@ def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb, filepath=None):
 
     if filepath is not None:
         try:
-            write_rules(rules, path)
-            print('Saved the rules to {}'.format(path))
-        except:
+            write_rules(rules, filepath)
+            print('Saved the rules to {}'.format(filepath))
+        except Exception as e:
+            print(e)
             raise ValueError("Sucessed to find rules, but failed to write the rules")
         finally:
             return rules
-
     return rules
 
 def write_rules(rules, path):
