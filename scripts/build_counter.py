@@ -42,6 +42,9 @@ def main():
 
     suffix = '' if num_sents < 0 else '_{}'.format(num_sents)
     suffix += '_pair' if eojeol_morpheme_pair else '_morpheme'
+    if input_file_type is None:
+        input_file_type == 'all'
+    suffix += '_{}'.format(input_file_type)
     path = '{}/counter_{}{}.txt'.format(output_dir, corpus_type, suffix)
 
     if corpus_type == 'sejong':
