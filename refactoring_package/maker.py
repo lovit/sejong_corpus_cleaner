@@ -1,8 +1,10 @@
 from collections import defaultdict
+import os
+
 from .lr import to_lr, preprocess0, preprocess1
 
 
-def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb):
+def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb, filepath=None):
     """
     Arguments
     ---------
@@ -18,6 +20,9 @@ def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb):
         Else it consider XSV + Eomi as surfacial form of verb,
 
             $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하다/Verb"
+
+    filepath : str
+        If filepath is not None, it writes the found rules to the filepath
 
     Returns
     ------
@@ -47,10 +52,27 @@ def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb):
             continue
         converter[(r, tuple(morphtags[b+1:]))] += count
 
+    rules = sorted(converter.items(), key=lambda x:-x[1])
     perc = 100 * count_exceptions / sum(counter.values())
     args = (len(converter), num_exceptions, '%.3f' % perc)
     print('Create {} rules with {} ({} %) errors'.format(*args))
-    return sorted(converter.items(), key=lambda x:-x[1])
+
+    if filepath is not None:
+        try:
+            write_rules(rules, path)
+            print('Saved the rules to {}'.format(path))
+        except:
+            raise ValueError("Sucessed to find rules, but failed to write the rules")
+        finally:
+            return rules
+
+    return rules
+
+def write_rules(rules, path):
+    with open(path, 'w', encoding='utf-8') as f:
+        for (r, morphtags), count in rules:
+            strf = ' + '.join(str(m) for m in morphtags)
+            f.write('{}\t{}\t{}\n'.format(r, strf, count))
 
 def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
     noun_xsv_as_verb=False, xsv_as_root=False, show_exception_cases=False):
