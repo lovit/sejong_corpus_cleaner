@@ -59,24 +59,27 @@ def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
             counter[key] += 1
 
     if convert_lr:
-        n_transform_exceptions = 0
-        # TODO : xsv_as_root option
+        num_exceptions = 0
+        count_exceptions = 0
         counter_ = defaultdict(int)
         for (eojeol, morphtags), count in counter.items():
             try:
-                eojeol_, l, r = to_lr(eojeol, morphtags, noun_xsv_as_verb, debug=False)[0]
-                key = (eojeol_, (l, r))
-                counter_[key] += count
+                results = to_lr(eojeol, morphtags, noun_xsv_as_verb, xsv_as_root, debug=False)
+                for eojeol_, l, r in results:
+                    key = (eojeol_, (l, r))
+                    counter_[key] += count
             except Exception as e:
-                n_transform_exceptions += 1
+                num_exceptions += 1
+                count_exceptions += count
                 if show_exception_cases:
                     print('L-R format converting error in (eojeol={}, morphtags={})'.format(eojeol, morphtags))
                     print(e, end='\n\n')
                 continue
         counter = counter_
 
-        print('Found {} (eojeol, morphtags) pairs with {} L-R transformation exception cases'.format(
-            len(counter_), n_transform_exceptions))
+        count_total = sum(counter.values())
+        args = (len(counter_), num_exceptions, '%.3f' % (100 * count_exceptions / count_total) )
+        print('Found {} (eojeol, morphtags) pairs with {} ({} %) L-R transformation exception cases'.format(*args))
 
     if not eojeol_morpheme_pair:
         morph_counter = defaultdict(int)
