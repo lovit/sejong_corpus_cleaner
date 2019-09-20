@@ -23,13 +23,97 @@ README 의 예시 코드는 아래의 폴더 구조를 전제합니다. script �
                 |- BTJO0446.txt
                 |- BTJO0447.txt
         |- clean # 정제된 세종 말뭉치 폴더
-    |- script #코드 폴더
+    |- scripts #코드 폴더
     |- README.md
 
 
 ## 스크립트 사용법
 
-TBA
+세종 말뭉치의 원 파일에는 여러 메타 정보 및 오류가 포함되어 있습니다. 이들을 제거한 뒤, (어절, 형태소열) 단위로 기록된 정제된 말뭉치를 만들기 위해서는 `scripts` 디렉토리의 `build_corpus.py` 파일을 이용할 수 있습니다.
+
+세종 말뭉치를 정제하기 위해서는 다음을 실행합니다.
+
+```
+cd scripts
+python build_corpus.py  --corpus_type sejong
+```
+
+세종 말뭉치의 품사 체계가 아닌, 복합형태소가 하나의 형태소로 축약된 L+[R] 형식의 말뭉치를 만들기 위해서는 다음의 스크립트를 실행합니다. 각 타입에 대한 설명은 아래를 참고하세요.
+
+```
+python build_corpus.py  --corpus_type type1
+python build_corpus.py  --corpus_type type2
+python build_corpus.py  --corpus_type type3
+```
+
+말뭉치를 만들 때 사용할 수 있는 옵션은 다음과 같습니다.
+
+| Argument | Type | Default value | Help |
+| --- | --- | --- | --- |
+| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| output_dir | str | '../data/clean/' | Processed corpus directory |
+| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1, | Maximum number of sentences |
+
+테스트 용으로 Type 2 형식으로 100 문장의 말뭉치를 만들기 위해서는 다음을 실행합니다.
+
+```
+python build_corpus.py  --corpus_type type2 --num_sents 100
+```
+
+(어절, 형태소열) 빈도를 테이블로 생성할 수 있습니다.
+
+```
+python build_counter.py --corpus_type type1
+```
+
+다음의 폴더에 파일이 생성됩니다. (어절, 형태소열, 빈도수) 가 tap 으로 구분됩니다.
+
+```
+cd data/clean
+cat counter_type1_pair.txt
+```
+
+```
+등	등/Noun + None	20
+있다	있/Verb + 다/Eomi	19
+있는	있/Verb + 는/Eomi	16
+...
+```
+
+형태소의 빈도수만 계산하고 싶을 때는 `only_morphemes` 을 활성화 합니다.
+
+```
+cd scripts
+python build_counter.py --corpus_type type1 --only_morphemes
+```
+
+```
+cd data/clean
+cat counter_type1_morpheme.txt
+```
+
+```
+ㄴ/Eomi	73
+는/Eomi	71
+이/Josa	67
+...
+```
+
+이 역시 다음의 옵션을 이용할 수 있습니다.
+
+| Argument | Type | Default value | Help |
+| --- | --- | --- | --- |
+| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| output_dir | str | '../data/clean/' | Processed corpus directory |
+| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1, | Maximum number of sentences |
+| only_morphemes | str | False | store_true, Count only morphemes |
+
+
+
 
 ## 패키지 사용법
 
