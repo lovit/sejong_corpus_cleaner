@@ -556,6 +556,7 @@ counter = make_counter(sents, convert_lr=True, xsv_as_root=True)
 | morphtags | list of (morph, tag) |
 | sentence (or sent, for short) | list of (eojeol, morphtags) |
 
+
 ## Requirements
 
 - beautifulsoup4 >= 4.6.0
