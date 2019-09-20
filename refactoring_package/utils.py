@@ -273,7 +273,7 @@ def check_lr_transformation(eojeol, l, r, debug=False):
 
     # ('이뤄진', [('이루어지', 'VV'), ('ㄴ', 'ETM')], False, False)
     # ('이뤄진다고', [('이루어지', 'VV'), ('ㄴ다고', 'EC')], False, False)
-    if len(l[0]) >= 3 and is_jaum(r[0][0]):
+    if len(l[0]) >= 3 and r[0] and is_jaum(r[0][0]):
         cho3, jung3, jong3 = decompose(l[0][-3])
         cho2, jung2, jong2 = decompose(l[0][-2])
         cho1, jung1, jong1 = decompose(l[0][-1])
