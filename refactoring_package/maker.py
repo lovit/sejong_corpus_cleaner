@@ -71,10 +71,31 @@ def make_lr_eomi_to_sejong_converter(sents, noun_xsv_as_verb, filepath=None):
     return rules
 
 def write_rules(rules, path):
+    """
+    Arguments
+    ---------
+    rules : list of tuple
+        ((r, list of MorphTag), count)
+    path : str
+        File path
+    """
     with open(path, 'w', encoding='utf-8') as f:
         for (r, morphtags), count in rules:
             strf = ' + '.join(str(m) for m in morphtags)
             f.write('{}\t{}\t{}\n'.format(r, strf, count))
+
+def write_sentences(sentences, path):
+    """
+    Arguments
+    ---------
+    sentences : list of Sentence or Sentences
+        Iterable object consists with Sentence instance
+    path : str
+        File path
+    """
+    with open(path, 'w', encoding='utf-8') as f:
+        for sent in sentences:
+            f.write('{}\n'.format(str(sent)))
 
 def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
     noun_xsv_as_verb=False, xsv_as_root=False, show_exception_cases=False):
