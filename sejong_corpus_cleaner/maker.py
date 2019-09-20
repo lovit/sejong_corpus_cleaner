@@ -237,7 +237,7 @@ def make_lr_corpus(sentences, noun_xsv_as_verb=False, xsv_as_root=False, filepat
             if f is None:
                 sents_lr.append(sent_lr)
             else:
-                f.write('{}\n\n'.format(sent_lr))
+                f.write('{}\n'.format(sent_lr))
         except Exception as e:
             #print(e)
             #print(traceback.format_exc())
