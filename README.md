@@ -448,6 +448,17 @@ counter = make_counter(sents, convert_lr=True)
 counter = make_counter(sents, convert_lr=True, xsv_as_root=True)
 ```
 
+## 코드 내 주요 변수명
+
+| Variable name | meaning |
+| --- | --- |
+| eojeol | str 로 표현된 어절 |
+| morph | str 로 표현된 형태소 혹은 단어 |
+| tag | str 로 표현된 품사 |
+| morphtag | (morph, tag) |
+| morphtags | list of (morph, tag) |
+| sentence (or sent, for short) | list of (eojeol, morphtags) |
+
 ## Requirements
 
 - beautifulsoup4 >= 4.6.0
