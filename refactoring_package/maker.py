@@ -1,5 +1,6 @@
 from collections import defaultdict
 import os
+import traceback
 
 from .loader import Sentence
 from .lr import to_lr, preprocess0, preprocess1
@@ -213,7 +214,8 @@ def make_lr_corpus(sentences, noun_xsv_as_verb=False, xsv_as_root=False, filepat
             else:
                 f.write('{}\n\n'.format(sent_lr))
         except Exception as e:
-            print(e)
+            #print(e)
+            #print(traceback.format_exc())
             num_exceptions += 1
             continue
 
