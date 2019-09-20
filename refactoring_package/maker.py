@@ -154,7 +154,9 @@ def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
         for (eojeol, morphtags), count in counter.items():
             try:
                 results = to_lr(eojeol, morphtags, noun_xsv_as_verb, xsv_as_root, debug=False)
-                for eojeol_, l, r in results:
+                for eojeol_, l, r, _, _ in results:
+                    if (not eojeol_) or (l is None):
+                        continue
                     key = (eojeol_, (l, r))
                     counter_[key] += count
             except Exception as e:
