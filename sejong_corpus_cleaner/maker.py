@@ -93,9 +93,11 @@ def write_sentences(sentences, path):
     path : str
         File path
     """
+    i = 0
     with open(path, 'w', encoding='utf-8') as f:
-        for sent in sentences:
+        for i, sent in enumerate(sentences):
             f.write('{}\n'.format(str(sent)))
+    print('{} sentences has been written at {}'.format(i+1, path))
 
 def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
     noun_xsv_as_verb=False, xsv_as_root=False, show_exception_cases=False):
