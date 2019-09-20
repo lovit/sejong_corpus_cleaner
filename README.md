@@ -50,11 +50,11 @@ python build_corpus.py  --corpus_type type3
 
 | Argument | Type | Default value | Help |
 | --- | --- | --- | --- |
-| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| input_dir | str | '../data/raw/' | Raw Sejong corpus directory |
 | output_dir | str | '../data/clean/' | Processed corpus directory |
-| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
-| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
-| num_sents | int | -1, | Maximum number of sentences |
+| input_file_type | str | 'all' | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong' | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1 | Maximum number of sentences |
 
 테스트 용으로 Type 2 형식으로 100 문장의 말뭉치를 만들기 위해서는 다음을 실행합니다.
 
@@ -105,14 +105,12 @@ cat counter_type1_morpheme.txt
 
 | Argument | Type | Default value | Help |
 | --- | --- | --- | --- |
-| input_dir | str | '../data/raw/', | Raw Sejong corpus directory |
+| input_dir | str | '../data/raw/' | Raw Sejong corpus directory |
 | output_dir | str | '../data/clean/' | Processed corpus directory |
-| input_file_type | str | 'all', | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
-| corpus_type | str | 'sejong', | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
-| num_sents | int | -1, | Maximum number of sentences |
+| input_file_type | str | 'all' | Input Sejong corpus type, choices=['all', 'written', 'colloquial'] |
+| corpus_type | str | 'sejong' | Corpus type, choices=['sejong', 'type1', 'type2', 'type3'] |
+| num_sents | int | -1 | Maximum number of sentences |
 | only_morphemes | str | False | store_true, Count only morphemes |
-
-
 
 
 ## 패키지 사용법
