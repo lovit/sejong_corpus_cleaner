@@ -1,5 +1,0 @@
-from ._loader import load_texts_as_eojeol_morphtags
-from ._loader import load_colloquial_text_as_eojeol_morphtags
-from ._loader import load_written_text_as_eojeol_morphtags
-from ._loader import load_texts_as_corpus
-from ._loader import load_texts_as_eojeol_morphtags_table

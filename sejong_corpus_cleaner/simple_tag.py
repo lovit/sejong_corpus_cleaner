@@ -1,4 +1,4 @@
-tagmap = {
+default_tagmap = {
  'EC': 'Eomi',
  'EF': 'Eomi',
  'EP': 'Eomi',
@@ -22,12 +22,12 @@ tagmap = {
  'NNG': 'Noun',
  'NNP': 'Noun',
  'NP': 'Pronoun',
- 'NR': 'Number',
+ 'NR': 'Numeral',
  'SE': 'Symbol',
  'SF': 'Symbol',
  'SH': 'Symbol',
  'SL': 'Symbol',
- 'SN': 'Symbol',
+ 'SN': 'Number',
  'SO': 'Symbol',
  'SP': 'Symbol',
  'SS': 'Symbol',
@@ -59,8 +59,47 @@ tagset = {
  'Verb': '동사'
 }
 
-def to_simple_tag(tag):
+def to_simple_tag(tag, tagmap=None):
+    """
+    Arguments
+    ---------
+    tag : str
+        Original tag
+    tagmap : dict of (str, str)
+        Tag mapper. If None, use default tagmap
+
+    Returns
+    -------
+    simple_tag : str
+        Simplified tag
+
+    Usage
+    -----
+        >>> to_simple_tag('NNG')
+        $ 'Noun'
+
+        >>> to_simple_tag('NNG', {'NNG': 'N'})
+        $ 'N'
+    """
+    if tagmap is None:
+        tagmap = default_tagmap
     return tagmap.get(tag, 'Unk')
 
-def to_simple_tag_sentence(sent):
-    return [(morph, to_simple_tag(tag)) for morph, tag in sent]
+def to_simple_morphtags(morphtags, tagmap=None):
+    """
+    Arguments
+    ---------
+    morphtags : list of tuple
+        Each tuple consists of (morph, tag)
+    tagmap : dict of (str, str)
+        Tag mapper. If None, use default tagmap
+
+    Returns
+    -------
+    morphtags : list of tuple
+        List of (morph, simplified_tag)
+
+    Usage
+    -----
+    """
+    return [(morph, to_simple_tag(tag, tagmap)) for morph, tag in morphtags]
