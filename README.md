@@ -2,158 +2,217 @@
 
 국립국어원에서 배포한 세종 말뭉치로부터 학습에 필요한 부분만을 취하기 위한 utils 입니다. 세종 말뭉치 데이터는 재배포가 제한되어 있기 때문에 원 데이터에서부터 필요한 정보를 추출하는 함수를 작성하였습니다.
 
-## Usage
-
-### Directory
+## 디렉토리 구조
 
 README 의 예시 코드는 아래의 폴더 구조를 전제합니다. script 폴더 안에서 작업한 코드 예시 입니다.
 
-    |- sejong_corpus_cleaner # package folder
-        |- processed_data
-        |- rawtext_loader
-        |- simplifier
-        |- ...
+    |- sejong_corpus_cleaner
     |- data # 데이터 폴더
         |- raw
             |- colloquial  # 구어 말뭉치, 200 개 파일
-                |- 5CT_0013.txt;
-                |- 5CT_0014.txt;
-                |- 5CT_0015.txt;
+                |- 5CT_0013.txt
+                |- 5CT_0014.txt
+                |- 5CT_0015.txt
                 |- ...
-                |- 9CT_0012.txt;
-                |- 9CT_0013.txt;
+                |- 9CT_0012.txt
+                |- 9CT_0013.txt
             |- written # 문어 말뭉치, 279 개 파일
-                |- BTAA0001.txt;
-                |- BTAA0002.txt;
+                |- BTAA0001.txt
+                |- BTAA0002.txt
                 |- ...
-                |- BTJO0446.txt;
-                |- BTJO0447.txt;
-        |- clean
+                |- BTJO0446.txt
+                |- BTJO0447.txt
+        |- clean # 정제된 세종 말뭉치 폴더
     |- script #코드 폴더
-    |- README.md;
+    |- README.md
 
-### Check encoding
 
-`sejong_corpus_cleaner` 패키지를 이용하기 위하여 sys.path 에 패키지 주소를 추가합니다.
+## 스크립트 사용법
+
+TBA
+
+## 패키지 사용법
+
+### 세종 말뭉치 파일 주소 가져오기
+
+위의 디렉토리 구조로 데이터를 저장해 두었다면 다음의 함수를 이용하여 세종 말뭉치 파일의 주소를 가져올 수 있습니다.
 
 ```python
-import sys
+from sejong_corpus_cleaner import get_data_path
 
-YOUR_LOCAL_GIT_REPOSITORY = ''
-sys.path.append(YOUR_LOCAL_GIT_REPOSITORY)
+paths = get_data_paths()
+paths = get_data_paths(corpus_types='written') # 문어체 말뭉치만 가져올 경우
+paths = get_data_paths(corpus_types='colloquial') # 구어체 말뭉치만 가져올 경우
+
+print(paths)
 ```
 
-세종 말뭉치의 파일 인코딩은 utf-16 입니다. 파일의 인코딩을 확인하기 위하여 **check_encoding** 를 이용할 수 있습니다. check_encoding 에는 list of str 형식의 파일 주소들을 입력합니다. 각 파일의 encoding 이 return 됩니다. Ubuntu OS 의 terminal command 인 file 함수를 이용합니다. Window OS 를 지원하지 않습니다.
+```
+[
+ ...
+ '~/sejong_corpus_cleaner/data/raw/written/BTAA0001.txt',
+ '~/sejong_corpus_cleaner/data/raw/written/BTAA0002.txt',
+ '~/sejong_corpus_cleaner/data/raw/written/BTAA0003.txt'
+ ...
+]
+```
+
+### 파일 인코딩 확인하기
+
+세종 말뭉치의 파일 인코딩은 utf-16 입니다. 파일의 인코딩을 확인하기 위하여 **check_encoding** 를 이용할 수 있습니다. check_encoding 에는 list of str 형식의 파일 주소들을 입력합니다. 각 파일의 encoding 이 return 됩니다. Ubuntu OS 의 terminal command 인 file 함수를 이용합니다. Window OS 를 지원하지 않습니다. 하지만 말뭉치 정제를 위해서 이 함수가 반드시 실행되어야 하는 것은 아닙니다. 파일 인코딩 확인용 함수입니다.
 
 ```python
 from sejong_corpus_cleaner import check_encoding
 
-check_encoding([
-    '../data/raw/colloquial/5CT_0013.txt',
-    '../data/raw/colloquial/5CT_0014.txt'
-])
+check_encoding(paths)
 ```
 
-    ../data/raw/colloquial/5CT_0013.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators
-    ../data/raw/colloquial/5CT_0014.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators
+```
+[
+  '../data/raw/colloquial/5CT_0013.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators',
+  '../data/raw/colloquial/5CT_0014.txt: HTML document, Little-endian UTF-16 Unicode text, with CRLF line terminators',
+]
+```
 
-### Loading raw texts as eojeol-morphemes
+### 하나의 파일을 list of Sentence 형식으로 로딩하기
 
-세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. **load_colloquial_text_as_eojeol_morphtags** 는 구어 데이터를 sentences 형식으로 파싱하는 함수이며, **load_written_text_as_eojeol_morphtags** 는 문어 데이터를 sentences 형식으로 파싱하는 함수입니다. 둘 모두 list of str 의 형식으로 문장을 return 합니다.
+세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. 하지만 세종 말뭉치 파일의 이름을 변경하지 않았다면 `load_a_file` 함수는 말뭉치 종류에 관계없이 이를 list of `Sentence` 형태로 읽어옵니다. 세종 말뭉치에는 형태소의 기록 형식이 지켜지지 않거나 빈 어절과 같은 오류들이 존재합니다. load_a_file 함수는 로딩 시 Sentence 로 변환하지 못한 오류의 개수를 `n_errors` 로 return 합니다.
 
 ```python
-from sejong_corpus_cleaner.rawtext_loader import load_colloquial_text_as_eojeol_morphtags
-from sejong_corpus_cleaner.rawtext_loader import load_written_text_as_eojeol_morphtags
+from refactoring_package import load_a_file
 
-colloquial = load_colloquial_text_as_eojeol_morphtags('../data/raw/colloquial/5CT_0013.txt')
-written = load_written_text_as_eojeol_morphtags('../data/raw/written/BTAA0001.txt')
+sents, n_errors = load_a_file(paths[0])
 ```
 
-list of str 에 포함된 str 은 한 문장이며, 각 어절이 줄바꿈 기호인 '\n' 로 구분되어 있습니다. 각 어절은 '어절\t분석결과' 처럼 탭 (tap) 기호로 구분되어 있습니다.
+`Sentence` 는 한 문장을 (어절, 형태소열) 의 리스트 단위로 저장한 클래스입니다. 한 문장은 어절 단위로 이들을 구성하는 형태소를 ` + ` 로 나누어 표시합니다.
 
 ```python
-print(colloquial[0])
+print(sents[0])
 ```
 
-    뭐	뭐/NP
-    타고	타/VV + 고/EC
-    가?	가/VV + ㅏ/EF + ?/SF
+```
+세계적인	세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM
+의상	의상/NNG
+디자이너	디자이너/NNG
+엠마누엘	엠마누엘/NNP
+웅가로가	웅가로/NNP + 가/JKS
+실내	실내/NNG
+장식용	장식/NNG + 용/XSN
+직물	직물/NNG
+디자이너로	디자이너/NNG + 로/JKB
+나섰다.	나서/VV + 었/EP + 다/EF + ./SF
+```
+
+Sentence 는 slicing 과 iteration 이 가능합니다.
 
 ```python
-print(written[0])
+print(sents[0][0]) ('프랑스의', [프랑스/NNP, 의/JKG])
 ```
-
-    프랑스의	프랑스/NNP + 의/JKG
-    세계적인	세계/NNG + 적/XSN + 이/VCP + ᆫ/ETM
-    의상	의상/NNG
-    디자이너	디자이너/NNG
-    엠마누엘	엠마누엘/NNP
-    웅가로가	웅가로/NNP + 가/JKS
-    실내	실내/NNG
-    장식용	장식/NNG + 용/XSN
-    직물	직물/NNG
-    디자이너로	디자이너/NNG + 로/JKB
-    나섰다.	나서/VV + 었/EP + 다/EF + ./SF
-
-**load_texts_as_eojeol_morphtags** 함수는 세종 말뭉치의 원 데이터 (raw data) 를 띄어쓰기로 구분된 '형태소/품사'열의 list of str 로 변형합니다. 세종 말뭉치의 구어와 문어 데이터는 loading 함수가 다르기 때문에 데이터의 종류에 따라 is_colloquial 을 True, False 로 설정해야 합니다.
 
 ```python
-from glob import glob
-from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtags
-
-paths = glob('../data/raw/colloquial/*.txt')
-eojeol_morphtag = load_texts_as_eojeol_morphtags(paths, is_colloquial=True)
-
-paths = glob('../data/raw/written/*.txt')
-eojeol_morphtag = load_texts_as_eojeol_morphtags(paths, is_colloquial=False)
+for eojeol, morphtags in sents[0]:
+    print('{} has {} morphemes'.format(eojeol, len(morphtags)))
 ```
 
-### 세종 말뭉치의 품사 체계를 이용하는 형태소 분석용 데이터셋 만들기
+```
+프랑스의 has 2 morphemes
+세계적인 has 4 morphemes
+의상 has 1 morphemes
+디자이너 has 1 morphemes
+엠마누엘 has 1 morphemes
+웅가로가 has 2 morphemes
+실내 has 1 morphemes
+장식용 has 2 morphemes
+직물 has 1 morphemes
+디자이너로 has 2 morphemes
+나섰다. has 4 morphemes
+```
 
-**load_texts_as_corpus** 함수는 여러 파일을 읽어 nested list 형식의 문장들을 return 합니다. 각 문장은 list of tuple 형식으로 [(단어, 품사), (단어, 품사), ... ] 형태입니다.  문어와 구어에 따라 is_colloquial 을 True, False 로 설정합니다.
+Slicing 한 sentence 는 (eojeol, list of MorphTag) 형식입니다. `MorphTag` 는 namedtuple 로 각 형태소의 글자와 품사를 각각 `morph` 와 `tag` 로 지니고 있습니다.
 
 ```python
-from sejong_corpus_cleaner.rawtext_loader import load_texts_as_corpus
+eojeol, morphtags = sents[0][0]
 
-paths = ['../data/raw/colloquial/5CT_0013.txt', '../data/raw/colloquial/5CT_0014.txt']
-data = load_texts_as_corpus(paths, is_colloquial= True)
+print(morphtags[0].morph) # 프랑스
+print(morphtags[0].tag) # NNP
 ```
 
-    [('뭐', 'NP'), ('타', 'VV'), ('고', 'EC'), ('가', 'VV'), ('ㅏ', 'EF'), ('?/SF', '')],
-     ('지하철', 'NNG'), ('./SF', '')],
-     ('기차', 'NNG'), ('?/SF', '')],
-     ('아침', 'NNG'), ('에', 'JKB'), ('몇', 'MM'), ('시', 'NNB'), ('에', 'JKB'), ...],
-     ...
-    ]
+### 하나 혹은 여러 개의 파일을 Sentences 형식으로 로딩하기
+
+때로는 형태소 빈도수 계산처럼 문장 단위로 작업을 수행할 때도 있습니다. 이때는 모든 문장을 읽어둘 필요가 없기 때문에 `Sentences` 를 이용할 수 있습니다. Sentences 에는 하나의 파일 혹은 여러 개의 파일 리스트를 입력할 수 있습니다.
 
 ```python
-paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
-data = load_texts_as_corpus(paths, is_colloquial= False)
+from sejong_corpus_cleaner import Sentences
+
+sents = Sentences(paths)
+sents = Sentences(paths[0], verbose=False)
 ```
 
-    [('프랑스', 'NNP'), ('의', 'JKG'), ('세계', 'NNG'), ('적', 'XSN'), ('이', 'VCP'), ('ᆫ', 'ETM'), ('의상', 'NNG'), ('디자이너', 'NNG'), ('엠마누엘', 'NNP'), ...],
-     ('웅가로', 'NNP'), ('는', 'JX'), ('침실', 'NNG'), ('과', 'JC'), ('식당', 'NNG'), (',/SP', '('욕실'),', 'NNG'), ('에서', 'JKB'), ('사용', 'NNG'), ...],
-     ('목욕', 'NNG'), ('가운', 'NNG'), ('부터', 'JX'), ('탁자보', 'NNG'), (',/SP', '('냅킨'),', 'NNG'), (',/SP', '('앞치마'),', 'NNG'), ('까지', 'JX'), ('그', 'NP'), ...],
-     ...
-    ]
-
-**load_texts_as_eojeol_morphtag_table** 함수는 세종 말뭉치의 원 데이터 (raw data) 로부터 어절을 구성하는 형태소와 해당 어절의 빈도수를 pandas.DataFrame 의 형태로 제공합니다. 이 역시 구어와 문어 데이터에 따라 is_colloquial 을 다르게 설정해야 합니다.
+위의 디렉토리 구조를 지킨 상태에서 **모든 세종 말뭉치 파일**을 이용하려면 paths 를 입력하지 않아도 됩니다.
 
 ```python
-from sejong_corpus_cleaner.rawtext_loader import load_texts_as_eojeol_morphtags_table
-
-paths = ['../data/raw/written/BTAA0001.txt', '../data/raw/written/BTAA0003.txt']
-table = load_texts_as_eojeol_morphtags_table(paths, is_colloquial=False)
+sents = Sentences()
 ```
 
-table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound 는 해당 어절이 두 개 이상의 형태소로 구성되어 있는지를 표시하는 column 이며, 각 형태소는 띄어쓰기로 구분됩니다.
+Sentences 는 generator of Sentence 형식이기 때문에 iteration 은 지원하지만 slicing 은 지원하지 않습니다. 그러나 `__len__` 은 지원합니다.
 
-| | Eojeol | morphtags | Count | Is_compound |
-| --- | --- | --- |  --- | --- |
-| 0 | 등 | 등/NNB | 175 | False |
-| 1 | 있다. | 있/VX 다/EF ./SF | 142 | True |
-| 2 | 수 | 수/NNB | 135 | False |
-| 3 | 있는 | 있/VX 는/ETM | 91 | True |
+```python
+len(sents) # 1127
+```
+
+`verbose` 를 True 로 설정하면 iteration 과정을 출력합니다.
+
+```python
+sents = Sentences(paths)
+for sent in sents:
+    # do something
+```
+
+```
+Iterating 11458 sents with 11 errors from 7 / 10 files
+```
+
+테스트 등의 이유로 샘플 문장만 살펴볼 때에는 `num_sents` 를 이용합니다. 최대로 읽을 문장의 개수를 설정하면 더 이상 iteration 하지 않습니다. 기본값은 -1 로, 모든 문장을 yield 합니다.
+
+```python
+sents = [sent for sent in Sentences(paths, num_sents=100)]
+len(sents) # 100
+```
+
+### 세종 말뭉치를 (어절, 형태소열) 형식으로 저장하기
+
+세종 말뭉치의 원 파일에는 각 어절과 형태소 외에도 여러 메타 정보가 포함되어 있습니다. 하지만 모델 학습에 필요한 정보는 주로 아래와 같은 각 어절과 그에 해당하는 형태소열입니다.
+
+```
+프랑스의	프랑스/NNP + 의/JKG
+세계적인	세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM
+의상	의상/NNG
+...
+```
+
+Sentences 형식으로 읽어들인 세종말뭉치를 `write_sentences` 함수를 이용하여 기록하면 위에 출력된 형식으로 말뭉치가 생성됩니다.
+
+```python
+from sejong_corpus_cleaner import write_sentences
+
+write_sentences(sents, 'sejong_corpus.txt')
+```
+
+### 정제된 데이터를 읽어오기
+
+세종 말뭉치의 원 파일이 아닌, 위의 과정을 통하여 정제된 파일은 `load_a_sentences_file` 을 이용하여 list of Sentence 로 읽을 수 있습니다.
+
+```python
+from sejong_corpus_cleaner import load_a_sentences_file
+
+sents = load_a_sentences_file('sejong_corpus.txt')
+```
+
+혹은 Sentences 를 이용할 수도 있습니다. 이때는 generator of Sentence 형식입니다.
+
+```python
+sents = Sentences('sejong_corpus.txt', processed=True)
+```
 
 ### 형태소 품사 체계 단순화
 
@@ -162,7 +221,7 @@ table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound �
 | Simplified tag | Sejong corpus tags |
 | --- | --- |
 | Noun (명사) | NNB, NNG, NNP, XR, XSN |
-| Number (수사) | NR |
+| Numeral (수사) | NR |
 | Pronoun (대명사) | NP |
 | Determiner (관형사) | MM, XPN |
 | Adverb (부사) | MAG, MAJ |
@@ -175,174 +234,218 @@ table 은 pandas.DataFrame 의 형태로, 아래와 같습니다. Is_compound �
 | Symbol (기호) | SE, SF, SH, SL, SN, SO, SP, SS, SW |
 
 ```python
-from sejong_corpus_cleaner.simplify import to_simple_tag_sentence
+from sejong_corpus_cleaner import to_simple_tag
 
-sent = [
-    ('프랑스', 'NNP'), ('의', 'JKG'), ('세계', 'NNG'), ('적', 'XSN'),
-    ('이', 'VCP'), ('ᆫ', 'ETM'), ('의상', 'NNG'), ('디자이너', 'NNG'),
-    ('엠마누엘', 'NNP'), ('웅가로', 'NNP'), ('가', 'JKS'), ('실내', 'NNG'),
-    ('장식', 'NNG'), ('용', 'XSN'), ('직물', 'NNG'), ('디자이너', 'NNG'),
-    ('로', 'JKB'), ('나서', 'VV'), ('었', 'EP'), ('다', 'EF'), ('.', 'SF')
-]
-
-to_simple_tag_sentence(sent)
+for tag in 'NNB NNG NNP XR XSN NR EC EF JC JKB SH NNNG'.split():
+    print('{} -> {}'.format(tag, to_simple_tag(tag)))
 ```
 
-    [('프랑스', 'Noun'), ('의', 'Josa'), ('세계', 'Noun'), ('적', 'Noun'),
-     ('이', 'Adjective'), ('ᆫ', 'Eomi'), ('의상', 'Noun'), ('디자이너', 'Noun'),
-     ('엠마누엘', 'Noun'), ('웅가로', 'Noun'), ('가', 'Josa'), ('실내', 'Noun'),
-     ('장식', 'Noun'), ('용', 'Noun'), ('직물', 'Noun'), ('디자이너', 'Noun'),
-     ('로', 'Josa'), ('나서', 'Verb'), ('었', 'Eomi'), ('다', 'Eomi'), ('.', 'Symbol')
-    ]
+```
+NNB -> Noun
+NNG -> Noun
+NNP -> Noun
+XR -> Noun
+XSN -> Noun
+NR -> Numeral
+EC -> Eomi
+EF -> Eomi
+JC -> Josa
+JKB -> Josa
+SH -> Symbol
+NNNG -> Unk
+```
+
+한 어절을 구성하는 형태소들을 단순한 형태의 품사로 변경하기 위해서는 `to_simple_morphtags` 를 이용합니다.
+
+```python
+from sejong_corpus_cleaner import to_simple_morphtags
+
+for eojeol, morphtags in sents[0]:
+    simple_morphtags = to_simple_morphtags(morphtags)
+    print('{} = {} -> {}'.format(eojeol, morphtags, simple_morphtags))
+```
+
+```
+프랑스의 = [프랑스/NNP, 의/JKG]  -> [('프랑스', 'Noun'), ('의', 'Josa')]
+세계적인 = [세계/NNG, 적/XSN, 이/VCP, ㄴ/ETM]  -> [('세계', 'Noun'), ('적', 'Noun'), ('이', 'Adjective'), ('ㄴ', 'Eomi')]
+의상 = [의상/NNG]  -> [('의상', 'Noun')]
+디자이너 = [디자이너/NNG]  -> [('디자이너', 'Noun')]
+...
+```
 
 ### 어절 내 여러 개의 단일 형태소를 하나의 복합형태소로 축약한 L-R corpus
 
 세종 말뭉치는 어절 '세계적인'을 다음의 형태소로 구성된 것으로 태깅하였습니다.
 
 ```python
-세계적인 = [('세계', 'NNG'), ('적', 'XSN'), ('이', 'VCP'), ('ᆫ', 'ETM')])
+print(sents[0][1])
+# ('세계적인', [세계/NNG, 적/XSN, 이/VCP, ㄴ/ETM])
 ```
 
 그러나 어절을 의미를 지니는 복합형태소 부분 (L) 과 문법 기능을 하는 복합형태소 부분 (R) 로 구분한다면 다음과 같이 단순화 할 수 있습니다. L-R 구조에 대한 내용은 [soynlp github](https://github.com/lovit/soynlp) 이나 [lovit blogs](https://lovit.github.io) 의 [포스트](https://lovit.github.io/nlp/2018/04/09/cohesion_ltokenizer/) 를 참고하세요.
 
-```python
-세계적인 = ('세계적', '인', 'Noun', 'Josa')
+```
+세계적인 = '세계적/Noun' + '인/Adjective'
 ```
 
-soynlp 에서 작업하는 단어 추출 기법과 세종 말뭉치를 함께 이용하기 위해서는 이처럼 세종 말뭉치를 L-R 구조로 변환할 수 있어야 합니다. soynlp 에서의 단어 추출은 여러 개의 명사로 이뤄진 복합명사를 단일 명사로 인식합니다. 또한 여러 개의 어미로 구성된 용언의 어미들도 하나의 어미로 인식합니다. 세종 말뭉치를 L-R corpus 로 변환하면 soynlp 에 의하여 확장되는 명사와 어미들을 함께 이용할 수 있습니다.
+그런데 '세계적인' 은 세 가지 타입으로 정리될 수 있습니다. 첫째는 VCP 이후를 하나의 형용사로 고려하는 것입니다. 이때의 형용사는 원형이 아닌 표현형이 됩니다. 이를 type 1 이라 합니다.
 
-    '주상 + 복합' 은 '주상복합'
-    '갔다면 = 가/동사 + ㅆ다면/어미'
-
-또한 어절에 포함되어 있는 기호를 제거하여 단어만 남겨둘 수 있습니다. 아래는 세종 말뭉치 내 세 개 문장이 L-R corpus 형식으로 변환된 예시입니다.
-
-    ## Sejong corpus
-    [('프랑스의', [('프랑스', 'NNP'), ('의', 'JKG')]),
-     ('세계적인', [('세계', 'NNG'), ('적', 'XSN'), ('이', 'VCP'), ('ᆫ', 'ETM')]),
-     ('의상', [('의상', 'NNG')]),
-     ('디자이너', [('디자이너', 'NNG')]),
-     ('엠마누엘', [('엠마누엘', 'NNP')]),
-     ('웅가로가', [('웅가로', 'NNP'), ('가', 'JKS')]),
-     ('실내', [('실내', 'NNG')]),
-     ('장식용', [('장식', 'NNG'), ('용', 'XSN')]),
-     ('직물', [('직물', 'NNG')]),
-     ('디자이너로', [('디자이너', 'NNG'), ('로', 'JKB')]),
-     ('나섰다.', [('나서', 'VV'), ('었', 'EP'), ('다', 'EF'), ('.', 'SF')])]
-
-    ## LR corpus
-    [('프랑스', '의', 'Noun', 'Josa'),
-     ('세계적', '인', 'Noun', 'Josa'),
-     ('의상', '', 'Noun', ''),
-     ('디자이너', '', 'Noun', ''),
-     ('엠마누엘', '', 'Noun', ''),
-     ('웅가로', '가', 'Noun', 'Josa'),
-     ('실내', '', 'Noun', ''),
-     ('장식용', '', 'Noun', ''),
-     ('직물', '', 'Noun', ''),
-     ('디자이너', '로', 'Noun', 'Josa'),
-     ('나서', '었다', 'Verb', 'Eomi')]
-
-    --------------------------------------------------
-
-    ## Sejong corpus
-    [('웅가로는', [('웅가로', 'NNP'), ('는', 'JX')]),
-     ('침실과', [('침실', 'NNG'), ('과', 'JC')]),
-     ('식당,', [('식당', 'NNG'), (',', 'SP')]),
-     ('욕실에서', [('욕실', 'NNG'), ('에서', 'JKB')]),
-     ('사용하는', [('사용', 'NNG'), ('하', 'XSV'), ('는', 'ETM')]),
-     ('갖가지', [('갖가지', 'NNG')]),
-     ('직물제품을', [('직물', 'NNG'), ('제품', 'NNG'), ('을', 'JKO')]),
-     ('디자인해', [('디자인', 'NNG'), ('하', 'XSV'), ('아', 'EC')]),
-     ('최근', [('최근', 'NNG')]),
-     ('파리의', [('파리', 'NNP'), ('의', 'JKG')]),
-     ('갤러리', [('갤러리', 'NNG')]),
-     ('라파예트백화점에서', [('라파예트', 'NNP'), ('백화점', 'NNG'), ('에서', 'JKB')]),
-     ("'색의", [("'", 'SS'), ('색', 'NNG'), ('의', 'JKG')]),
-     ("컬렉션'이라는", [('컬렉션', 'NNG'), ("'", 'SS'), ('이', 'VCP'), ('라는', 'ETM')]),
-     ('이름으로', [('이름', 'NNG'), ('으로', 'JKB')]),
-     ('전시회를', [('전시회', 'NNG'), ('를', 'JKO')]),
-     ('열었다.', [('열', 'VV'), ('었', 'EP'), ('다', 'EF'), ('.', 'SF')])]
-
-    ## LR corpus
-    [('웅가로', '는', 'Noun', 'Josa'),
-     ('침실', '과', 'Noun', 'Josa'),
-     ('식당', '', 'Noun', ''),
-     ('욕실', '에서', 'Noun', 'Josa'),
-     ('사용', '하는', 'Noun', 'Josa'),
-     ('갖가지', '', 'Noun', ''),
-     ('직물제품', '을', 'Noun', 'Josa'),
-     ('디자인', '하해', 'Noun', 'Josa'),
-     ('최근', '', 'Noun', ''),
-     ('파리', '의', 'Noun', 'Josa'),
-     ('갤러리', '', 'Noun', ''),
-     ('라파예트백화점', '에서', 'Noun', 'Josa'),
-     ('색', '의', 'Noun', 'Josa'),
-     ('컬렉션', '이라는', 'Noun', 'Josa'),
-     ('이름', '으로', 'Noun', 'Josa'),
-     ('전시회', '를', 'Noun', 'Josa'),
-     ('열', '었다', 'Verb', 'Eomi')]
-
-    --------------------------------------------------
-
-    ## Sejong corpus
-    [('목욕가운부터', [('목욕', 'NNG'), ('가운', 'NNG'), ('부터', 'JX')]),
-     ('탁자보,', [('탁자보', 'NNG'), (',', 'SP')]),
-     ('냅킨,', [('냅킨', 'NNG'), (',', 'SP')]),
-     ('앞치마까지', [('앞치마', 'NNG'), ('까지', 'JX')]),
-     ('그가', [('그', 'NP'), ('가', 'JKS')]),
-     ('디자인한', [('디자인', 'NNG'), ('하', 'XSV'), ('ᆫ', 'ETM')]),
-     ('작품들에서', [('작품', 'NNG'), ('들', 'XSN'), ('에서', 'JKB')]),
-     ('두드러지는', [('두드러지', 'VV'), ('는', 'ETM')]),
-     ('것은', [('것', 'NNB'), ('은', 'JX')]),
-     ('색의', [('색', 'NNG'), ('의', 'JKG')]),
-     ('조화다.', [('조화', 'NNG'), ('이', 'VCP'), ('다', 'EF'), ('.', 'SF')])]
-
-    ## LR corpus
-    [('목욕가운', '부터', 'Noun', 'Josa'),
-     ('탁자보', '', 'Noun', ''),
-     ('냅킨', '', 'Noun', ''),
-     ('앞치마', '까지', 'Noun', 'Josa'),
-     ('그', '가', 'Pronoun', 'Josa'),
-     ('디자인', '한', 'Noun', 'Josa'),
-     ('작품들', '에서', 'Noun', 'Josa'),
-     ('두드러지', '는', 'Verb', 'Eomi'),
-     ('것', '은', 'Noun', 'Josa'),
-     ('색', '의', 'Noun', 'Josa'),
-     ('조화', '이다', 'Noun', 'Josa')]
-
-위 변환을 위하여 다음의 함수가 이용됩니다.
-
-```python
-from sejong_corpus_cleaner.simplifier import eojeol_morphtags_to_lr
-
-eojeol = '나눠져'
-morphtag = [['나누', 'VV'], ['ㅓ', 'EC'], ['지', 'VX'], ['ㅓ', 'EC']]
-
-print(eojeol_morphtags_to_lr(eojeol, morphtag))
-# ('나눠지', '어', 'Verb', 'Eomi')
+```
+세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM  ->  세계적/Noun + 인/Adjective
 ```
 
-어절 내 형태소들을 L-R 구조로 변형할 때, 명사 뒤에 위치하는 동사/형용사 전성 어미인 XSV/XSA 와 긍정/부정 지정사인 VCP/VCN 은 명사와 함께 하나의 L 로 볼 수도 있고, 독립된 L 로 볼 수 도 있습니다. 이는 사용자 패러매터로 조절할 수 있습니다. separate_xsv 의 기본값은 True 입니다. '생각했어요'는 '생각하/Verb + 았어요/Eomi' 로 볼 수도 있으며, '생각/Noun + 하/Verb + 았어요/Eomi' 로 볼 수도 있습니다. L-R 은 한 어절에 L 과 R 의 성분이 있다고 가정하므로 후자의 경우는 '(생각/Noun, L), (하/Verb, L), (았어요/Eomi, R)' 로 표현됩니다.
+둘째는 명사와 VCP 을 합쳐서 형용사화 하는 것입니다. 이를 type 2 이라 합니다.
 
-```python
-eojeol = '생각했어요'
-morphtag = [('생각', 'NNP'), ('하', 'XSV'), ('았', 'EP'), ('어요', 'EF')]
-eojeol_morphtags_to_lr(eojeol, morphtag, separate_xsv=True)
-# (('생각', '', 'Noun', ''), ('하', '았어요', 'Verb', 'Eomi'))
-
-eojeol_morphtags_to_lr(eojeol, morphtag, separate_xsv=False)
-# ('생각하', '았어요', 'Verb', 'Eomi')
+```
+세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM  ->  세계적이/Adjective + ㄴ/Eomi
 ```
 
-하나의 어절이 아닌 문장을 변환할 때는 다음의 함수를 이용합니다. 이때에도 separate_xsv 패러매터를 입력할 수 있습니다. 기본값은 True 입니다.
+셋째는 VCP 이후를 새로운 어절의 용언으로 고려하여 이를 L + [R] 로 분해하는 것입니다. 한국어 형태소 중 명사를 형용사나 동사로 전성하는 어미들은 각각 용언의 어간이기도 합니다 (-되, -이, -하 등). 이를 type 3 이라 합니다.
+
+```
+세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM  ->  ["세계적/Noun", "이/Adjective + ㄴ/Eomi"]
+```
+
+`make_lr_corpus` 함수는 세종 말뭉치의 품사 체계를 따르는 Sentences 를 L+[R] 형식의 말뭉치로 변환합니다. 각 type 별로 세종 말뭉치를 변환하기 위해서는 make_lr_corpus 에 옵션을 다르게 설정해야 합니다.
+
+```
+sents_lr_format = make_lr_corpus(sents)
+```
+
+아래의 세종 말뭉치의 한 문장을 각 타입별로 변형하면 아래와 같습니다.
 
 ```python
-from sejong_corpus_cleaner.processed_data import EojeolMorphtagSentence
-from sejong_corpus_cleaner.simplifier import eojeol_morphtags_sentence_to_lr
+sents = [sent for sent in sents]
+sents[0]
+```
 
-ems = EojeolMorphtagSentence('../data/clean/eojeol_morphtag_written.txt')
-for sent in ems:
-    sent_ = eojeol_morphtags_sentence_to_lr(sent, separate_xsv=True)
+```
+프랑스의	프랑스/NNP + 의/JKG
+세계적인	세계/NNG + 적/XSN + 이/VCP + ㄴ/ETM
+의상	의상/NNG
+디자이너	디자이너/NNG
+엠마누엘	엠마누엘/NNP
+웅가로가	웅가로/NNP + 가/JKS
+실내	실내/NNG
+장식용	장식/NNG + 용/XSN
+직물	직물/NNG
+디자이너로	디자이너/NNG + 로/JKB
+나섰다.	나서/VV + 었/EP + 다/EF + ./SF
+```
+
+기본 설정은 `type 1` 입니다. 말뭉치 형태를 변형하며 발생하는 오류의 개수가 출력됩니다.
+
+```python
+sent_lr = make_lr_corpus(sents[:10], noun_xsv_as_verb=False)[0]
+print(sent_lr)
+```
+
+```
+Transform Sejong corpus to L-R format with 0 exceptions from 10 sents
+
+프랑스의	프랑스/Noun + 의/Josa
+세계적인	세계적/Noun + 인/Adjective
+의상	의상/Noun
+디자이너	디자이너/Noun
+엠마누엘	엠마누엘/Noun
+웅가로가	웅가로/Noun + 가/Josa
+실내	실내/Noun
+장식용	장식용/Noun
+직물	직물/Noun
+디자이너로	디자이너/Noun + 로/Josa
+나섰다	나서/Verb + 었다/Eomi
+```
+
+`type 2` 는 `noun_xsv_as_verb` 를 True 로 설정합니다.
+
+```python
+make_lr_corpus(sents[:10], noun_xsv_as_verb=True)[0]
+```
+
+```
+프랑스의	프랑스/Noun + 의/Josa
+세계적인	세계적이/Adjective + ㄴ/Eomi
+의상	의상/Noun
+디자이너	디자이너/Noun
+엠마누엘	엠마누엘/Noun
+웅가로가	웅가로/Noun + 가/Josa
+실내	실내/Noun
+장식용	장식용/Noun
+직물	직물/Noun
+디자이너로	디자이너/Noun + 로/Josa
+나섰다	나서/Verb + 었다/Eomi
+```
+
+`type 3` 는 `xsv_as_root` 를 True 로 설정합니다.
+
+```python
+make_lr_corpus(sents[:10], xsv_as_root=True)[0]
+```
+
+```
+프랑스의	프랑스/Noun + 의/Josa
+세계적	세계적/Noun
+인	이/Adjective + ㄴ/Eomi
+의상	의상/Noun
+디자이너	디자이너/Noun
+엠마누엘	엠마누엘/Noun
+웅가로가	웅가로/Noun + 가/Josa
+실내	실내/Noun
+장식용	장식용/Noun
+직물	직물/Noun
+디자이너로	디자이너/Noun + 로/Josa
+나섰다	나서/Verb + 었다/Eomi
+```
+
+문장 단위로 말뭉치를 변형하며 곧바로 파일에 기록하기 위해서는 `filepath` 에 파일 주소를 입력합니다. 이때는 return 값이 없습니다.
+
+```python
+make_lr_corpus(sents, filepath='lr_corpus_type1.txt')
+make_lr_corpus(sents, noun_xsv_as_verb=True, filepath='lr_corpus_type2.txt')
+make_lr_corpus(sents, xsv_as_root=True, filepath='lr_corpus_type3.txt')
+```
+
+생성된 L+[R] 형식의 말뭉치는 Sentences 를 이용하여 로딩할 수 있습니다.
+
+```
+corpus_type1 = Sentences('lr_corpus_type1.txt')
+```
+
+### 어절, 형태소열의 빈도수 계산
+
+(어절, 형태소열) 쌍 혹은 형태소들의 빈도수를 계산하기 위하여 `make_counter` 를 이용할 수 있습니다. {key:count} 형식의 dict 가 return 됩니다.
+
+```python
+from sejong_corpus_cleaner import make_counter
+
+counter = make_counter(sents_type1)
+sorted(counter.items(), key=lambda x:-x[1])[:5]
+```
+
+```
+[(('등', (등/Noun,)), 20),
+ (('있다', (있/Verb, 다/Eomi)), 19),
+ (('있는', (있/Verb, 는/Eomi)), 16),
+ (('수', (수/Noun,)), 10),
+ (('많이', (많이/Adverb,)), 8)]
+```
+
+(어절, 형태소열) 쌍이 아닌 형태소들의 빈도수만 계산하기 위해서는 `eojeol_morpheme_pair` 를 False 로 설정합니다.
+
+```python
+counter = make_counter(sents_type1, eojeol_morpheme_pair=False)
+sorted(counter.items(), key=lambda x:-x[1])[:5]
+```
+
+```
+[(이/Josa, 67), (의/Josa, 62), (는/Eomi, 60), (을/Josa, 57), (은/Josa, 51)]
+```
+
+세종 말뭉치의 품사 체계를 따르는 Sentences 의 경우, 곧바로 L+[R] 형식으로 변형이 가능하며 각 type 별 옵션도 동일하게 입력할 수 있습니다.
+
+```python
+counter = make_counter(sents, convert_lr=True)
+counter = make_counter(sents, convert_lr=True, xsv_as_root=True)
 ```
 
 ## Requirements
