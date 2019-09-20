@@ -1,6 +1,7 @@
 from collections import defaultdict
 import os
 
+from .loader import Sentence
 from .lr import to_lr, preprocess0, preprocess1
 
 
@@ -156,14 +157,72 @@ def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
 
     return dict(counter)
 
-def make_morpheme_table(table_file_path, data_dir=None,
-    convert_lr=False, noun_xsv_as_verb=False, corpus_types=None):
+def make_lr_corpus(sentences, noun_xsv_as_verb=False, xsv_as_root=False, filepath=None):
+    """
+    Arguments
+    ---------
+    sentences : list of Sentence or Sentences
+        Iterable object consists with Sentence instance
+    noun_xsv_as_verb : Boolean
+        Option for L-R format transformation.
+        If True, it considers Noun + XSV as verb.
+        For example,
 
-    paths = prepare_data_paths(corpus_types, data_dir)
-    raise NotImplemented
+            $ "시작/NNG + 하/XSV + 다/EP" -> "시작하/Verb + 다/Eomi"
 
-def make_lr_corpus(corpus_file_path, data_dir=None,
-    noun_xsv_as_verb=False, corpus_types=None):
+        Else it consider XSV + Eomi as surfacial form of verb,
 
-    paths = prepare_data_paths(corpus_types, data_dir)
-    raise NotImplemented
+            $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하다/Verb"
+
+    xsv_as_root : Boolean
+        Option for L-R format transformation.
+        It executes only when noun_xsv_as_verb is False
+        If True, it considers XSV as root of verb
+
+            $ "시작/NNG + 하/XSV + 다/EP" -> ["시작/Noun", "하/Verb + 다/Eomi"]
+
+        Else
+
+            $ "시작/NNG + 하/XSV + 다/EP" -> "시작/Noun + 하다/Verb"
+    """
+
+    f = None
+    if filepath is not None:
+        f = open(filepath, 'w', encoding='utf-8')
+
+    num_exceptions = 0
+    sents_lr = []
+    num_sents = 0
+
+    for sent in sentences:
+        num_sents += 1
+        try:
+            eojeols_lr = []
+            morphtags_lr = []
+            for eojeol, morphtags in sent:
+                for e, l, r, _, _ in to_lr(eojeol, morphtags, noun_xsv_as_verb, xsv_as_root):
+                    eojeols_lr.append(e)
+                    if r is None:
+                        morphtags_lr.append([l])
+                    else:
+                        morphtags_lr.append([l, r])
+
+            sent_lr = Sentence(eojeols_lr, morphtags_lr)
+            if f is None:
+                sents_lr.append(sent_lr)
+            else:
+                f.write('{}\n\n'.format(sent_lr))
+        except Exception as e:
+            print(e)
+            num_exceptions += 1
+            continue
+
+    args = (num_exceptions, num_sents)
+    print('Transform Sejong corpus to L-R format with {} exceptions from {} sents'.format(*args))
+
+    if f is not None:
+        print('L-R format corpus is sccessfully written at {}'.format(filepath))
+        f.close()
+        return None
+
+    return sents_lr

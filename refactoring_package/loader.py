@@ -187,7 +187,7 @@ def prepare_data_paths(corpus_types=None, data_dir=None):
 
     paths = []
     for ctype in corpus_types:
-        paths += glob(data_dir + ctype + '/*.txt')
+        paths += sorted(glob(data_dir + ctype + '/*.txt'))
 
     if len(paths) == 0:
         raise ValueError('File not founded from {}'.format(data_dir))
