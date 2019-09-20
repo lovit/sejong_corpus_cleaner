@@ -76,10 +76,10 @@ check_encoding(paths)
 
 ### 하나의 파일을 list of Sentence 형식으로 로딩하기
 
-세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. 하지만 세종 말뭉치 파일의 이름을 변경하지 않았다면 `load_a_file` 함수는 말뭉치 종류에 관계없이 이를 list of `Sentence` 형태로 읽어옵니다. 세종 말뭉치에는 형태소의 기록 형식이 지켜지지 않거나 빈 어절과 같은 오류들이 존재합니다. load_a_file 함수는 로딩 시 Sentence 로 변환하지 못한 오류의 개수를 `n_errors` 로 return 합니다.
+세종 말뭉치의 구어 데이터와 문어 데이터는 포멧이 다릅니다. 하지만 세종 말뭉치 파일의 이름을 변경하지 않았다면 `load_a_sejong_file` 함수는 말뭉치 종류에 관계없이 이를 list of `Sentence` 형태로 읽어옵니다. 세종 말뭉치에는 형태소의 기록 형식이 지켜지지 않거나 빈 어절과 같은 오류들이 존재합니다. load_a_file 함수는 로딩 시 Sentence 로 변환하지 못한 오류의 개수를 `n_errors` 로 return 합니다.
 
 ```python
-from refactoring_package import load_a_file
+from refactoring_package import load_a_sejong_file
 
 sents, n_errors = load_a_file(paths[0])
 ```
