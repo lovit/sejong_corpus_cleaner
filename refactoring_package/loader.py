@@ -1,9 +1,11 @@
 from collections import namedtuple
 from bs4 import BeautifulSoup
+from glob import glob
 import os
 
-from .utils import unicode_sentence
 from .format_checker import check_sejong_tagset
+from .utils import unicode_sentence
+from .utils import data_dir as default_data_dir
 
 
 sep = os.path.sep
@@ -136,6 +138,60 @@ class Sentence:
             return self.morphtags
         return [mt for mts in self.morphtags for mt in mts]
 
+class Sentences:
+    """
+    Arguments
+    ---------
+    file_paths : list or str
+        Sejong corpus file paths
+    verbose : Boolean
+        If True, it shows progress of iteration
+    """
+    def __init__(self, file_paths=None, verbose=True):
+        if file_paths is None:
+            file_paths = prepare_data_paths()
+
+        self.file_paths = file_paths
+        self.verbose = verbose
+
+    def __iter__(self):
+        n_sents_, n_errors_ = 0, 0
+        for i, path in enumerate(self.file_paths):
+            sents, n_errors = load_a_file(path, remain_dummy_morpheme=False)
+            n_sents_ += len(sents)
+            n_errors_ += n_errors
+            for sent in sents:
+                yield sent
+            if self.verbose:
+                args = (n_sents_, n_errors_, i+1, len(self.file_paths))
+                print('\rIterating {} sents with {} errors from {} / {} files'.format(*args), end='')
+        if self.verbose:
+            args = (n_sents_, n_errors_, len(self.file_paths), ' '*20)
+            print('\rIterated {} sents with {} errors from {} files{}'.format(*args))
+
+
+def check_corpus_type(corpus_types):
+    if corpus_types is None:
+        corpus_types = ['written', 'colloquial']
+    if isinstance(corpus_types, str):
+        corpus_types = [corpus_types]
+    for ctype in corpus_types:
+        if not (ctype in {'written', 'colloquial'}):
+            raise ValueError('Corpus type must be "colloquial" or "written" but {}'.format(ctype))
+    return corpus_types
+
+def prepare_data_paths(corpus_types=None, data_dir=None):
+    corpus_types = check_corpus_type(corpus_types)
+    if data_dir is None:
+        data_dir = default_data_dir
+
+    paths = []
+    for ctype in corpus_types:
+        paths += glob(data_dir + ctype + '/*.txt')
+
+    if len(paths) == 0:
+        raise ValueError('File not founded from {}'.format(data_dir))
+    return paths
 
 def load_a_file(path, remain_dummy_morpheme=False, debug=False):
     """

@@ -1,8 +1,5 @@
 from collections import defaultdict
-from glob import glob
-from .loader import load_a_file
 from .lr import to_lr
-from .utils import data_dir as default_data_dir
 
 
 def make_eojeol_morphemes_table(table_file_path, data_dir=None,
@@ -11,13 +8,13 @@ def make_eojeol_morphemes_table(table_file_path, data_dir=None,
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
 
-def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
+def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
     noun_xsv_as_verb=False, xsv_as_root=False, show_exception_cases=False):
     """
     Arguments
     ---------
-    file_paths : list of str
-        Sejong corpus file paths
+    sentences : list of Sentence or Sentences
+        Iterable object consists with Sentence instance
     eojeol_morpheme_pair : Boolean
         If True, the key of counter is ("eojeol", ("morph/tag", "morph/tag", ...))
         Else, the key of counter is "morph/tag"
@@ -56,18 +53,10 @@ def load_counter(file_paths, eojeol_morpheme_pair=True, convert_lr=False,
     """
 
     counter = defaultdict(int)
-    n_sents_ = 0
-    n_errors_ = 0
-
-    for path in file_paths:
-        sents, n_errors = load_a_file(path, remain_dummy_morpheme=False)
-        n_sents_ += len(sents)
-        n_errors_ += n_errors
-        for sent in sents:
-            for eojeol, morphtags in sent:
-                key = (eojeol, tuple(morphtags))
-                counter[key] += 1
-    print('Loaded {} sents with {} errors from {} files'.format(n_sents_, n_errors_, len(file_paths)))
+    for sent in sentences:
+        for eojeol, morphtags in sent:
+            key = (eojeol, tuple(morphtags))
+            counter[key] += 1
 
     if convert_lr:
         n_transform_exceptions = 0
@@ -109,24 +98,3 @@ def make_lr_corpus(corpus_file_path, data_dir=None,
 
     paths = prepare_data_paths(corpus_types, data_dir)
     raise NotImplemented
-
-def check_corpus_type(corpus_types):
-    if corpus_types is None:
-        corpus_types = ['written', 'colloquial']
-    for ctype in corpus_types:
-        if not (ctype in {'written', 'colloquial'}):
-            raise ValueError('Corpus type must be "colloquial" or "written" but {}'.format(ctype))
-    return corpus_types
-
-def prepare_data_paths(corpus_types=None, data_dir=None):
-    corpus_types = check_corpus_type(corpus_types)
-    if data_dir is None:
-        data_dir = default_data_dir
-
-    paths = []
-    for ctype in corpus_types:
-        paths += glob(data_dir + ctype + '/*.txt')
-
-    if len(paths) == 0:
-        raise ValueError('File not founded from {}'.format(data_dir))
-    return paths
