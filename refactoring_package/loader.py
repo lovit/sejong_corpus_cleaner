@@ -156,7 +156,7 @@ class Sentences:
     """
     def __init__(self, file_paths=None, verbose=True):
         if file_paths is None:
-            file_paths = prepare_data_paths()
+            file_paths = get_data_paths()
 
         self.file_paths = file_paths
         self.verbose = verbose
@@ -187,7 +187,7 @@ def check_corpus_type(corpus_types):
             raise ValueError('Corpus type must be "colloquial" or "written" but {}'.format(ctype))
     return corpus_types
 
-def prepare_data_paths(corpus_types=None, data_dir=None):
+def get_data_paths(corpus_types=None, data_dir=None):
     corpus_types = check_corpus_type(corpus_types)
     if data_dir is None:
         data_dir = default_data_dir
