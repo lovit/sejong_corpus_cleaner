@@ -138,6 +138,7 @@ class Sentence:
         morphtags_strf = [' + '.join(str(mt) for mt in mts) for mts in self.morphtags]
         strf = '\n'.join(
             '%s\t%s' % (eojeol, morphtags) for eojeol, morphtags in zip(self.eojeols, morphtags_strf))
+        strf += '\n'
         return strf
 
     def get_morphtags(self, flatten=False):
