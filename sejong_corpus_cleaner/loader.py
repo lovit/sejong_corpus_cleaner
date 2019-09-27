@@ -455,3 +455,34 @@ def unify_morphemes_separator(sent):
         return token
 
     return '\n'.join([unify(token) for token in sent.split('\n') if token])
+
+def load_count_table(path, sep='\t'):
+    """
+    Arguments
+    ---------
+    path : str
+        Table file path
+    sep : str
+        Separator
+    """
+
+    def cast(row):
+        key = row[:-1]
+        if len(key) == 1:
+            key = tuple(key)
+        elif len(key) == 2:
+            eojeol, morphtags = key
+            morphtags = [mt.rsplit('/', 1) for mt in morphtags.split(" + ")]
+            morphtags = [MorphTag(morph, tag) for morph, tag in morphtags]
+            key = (eojeol, morphtags)
+        else:
+            raise ValueError('Check table format')
+
+        count = int(row[-1])
+        return (key, count)
+
+    with open(path, encoding='utf-8') as f:
+        rows = [row.strip() for row in f]
+    rows = [row.split(sep) for row in rows if row]
+    rows = [cast(row) for row in rows]
+    return rows

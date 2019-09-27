@@ -289,24 +289,3 @@ def check_lr_transformation(eojeol, l, r, debug=False):
                 return True
 
     return False
-
-def load_count_table(path, sep='\t'):
-    """
-    Arguments
-    ---------
-    path : str
-        Table file path
-    sep : str
-        Separator
-    """
-
-    def cast(row):
-        key = tuple(row[:-1])
-        count = int(row[-1])
-        return (key, count)
-
-    with open(path, encoding='utf-8') as f:
-        rows = [row.strip() for row in f]
-    rows = [row.split(sep) for row in rows if row]
-    rows = [cast(row) for row in rows]
-    return rows
