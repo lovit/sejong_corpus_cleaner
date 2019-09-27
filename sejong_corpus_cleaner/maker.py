@@ -159,7 +159,10 @@ def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
                 for eojeol_, l, r, _, _ in results:
                     if (not eojeol_) or (l is None):
                         continue
-                    key = (eojeol_, (l, r))
+                    if r is None:
+                        key = (eojeol_, (l,))
+                    else:
+                        key = (eojeol_, (l, r))
                     counter_[key] += count
             except Exception as e:
                 num_exceptions += 1
