@@ -469,7 +469,7 @@ def load_count_table(path, sep='\t'):
     def cast(row):
         key = row[:-1]
         if len(key) == 1:
-            key = tuple(key)
+            key = key[0]
         elif len(key) == 2:
             eojeol, morphtags = key
             morphtags = [mt.rsplit('/', 1) for mt in morphtags.split(" + ")]
