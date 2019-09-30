@@ -623,6 +623,10 @@ def lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, tag_r, morphs, i, 
     ###############
     # lemmatizing eomis #
 
+    if len(concat_r) + 2 <= len(surface_r):
+        return ''
+        #raise ValueError('어절에 잘못된 글자가 포함되어 있을 경우: eojeol={}, morphs={}'.format(eojeol, morphs))
+
     # 활용시 2음절이 1음절로 변하는 경우 (1음절 R 이 합쳐진 경우)
     # 복원시 1음절을 2음절로 확장
     # ('다해', [['다', 'MAG'], ['하', 'VV'], ['아', 'EC']], False, False)
