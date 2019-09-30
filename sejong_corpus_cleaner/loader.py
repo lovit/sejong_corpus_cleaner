@@ -196,10 +196,10 @@ class Sentences:
 
             if self.verbose:
                 args = (n_sents_, n_errors_, i+1, len(self.file_paths))
-                print('\rIterating {} sents with {} errors from {} / {} files'.format(*args), end='')
+                print('\rIterating {} sents + {} errors from {} / {} files'.format(*args), end='')
         if self.verbose:
             args = (n_sents_, n_errors_, len(self.file_paths), ' '*20)
-            print('\rIterated {} sents with {} errors from {} files{}'.format(*args))
+            print('\rIterated {} sents + {} errors from {} files{}'.format(*args))
 
     def __len__(self):
         i = -1
