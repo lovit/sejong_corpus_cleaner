@@ -135,9 +135,7 @@ def split_by_xsv(eojeol, morphtags, debug=False):
     simple_tags = [to_simple_tag(mt.tag) for mt in morphtags]
     for target in 'XSV XSA VCP VCN'.split():
         i = rindex(tags, target)
-        # TODO: check
-        # if not (i > 0 and (simple_tags[i-1] == 'Noun') or (simple_tags[i-1] == 'Eomi')):
-        if not (i > 0 and simple_tags[i-1] == 'Noun'):
+        if not (i > 0 and (simple_tags[i-1] == 'Noun' or simple_tags[i-1] == 'Adverb')):
             continue
         eojeol_0_len = len(''.join([c for mt in morphtags[:i] for c in mt.morph if (not is_jaum(c) and not is_moum(c))]))
         eojeol_0 = eojeol[:eojeol_0_len]
