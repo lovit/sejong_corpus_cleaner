@@ -209,6 +209,17 @@ class Sentences:
 
 
 def check_corpus_type(corpus_types):
+    """
+    Argument
+    --------
+    corpus_types : str or None
+        Available : ['written', 'colloquial']
+
+    Returns
+    -------
+    flag : Boolean
+        Return True if corpus types is one of ['written', 'colloquial', None]
+    """
     if corpus_types is None:
         corpus_types = ['written', 'colloquial']
     if isinstance(corpus_types, str):
@@ -219,6 +230,19 @@ def check_corpus_type(corpus_types):
     return corpus_types
 
 def get_data_paths(corpus_types=None, data_dir=None):
+    """
+    Arguments
+    ---------
+    corpus_types : str or None
+        Available : ['written', 'colloquial']
+    data_dir : str or None
+        Data directory
+
+    Returns
+    -------
+    paths : list of str
+        File paths
+    """
     corpus_types = check_corpus_type(corpus_types)
     if data_dir is None:
         data_dir = default_data_dir
@@ -477,12 +501,17 @@ def load_count_table(path, sep='\t'):
             key = (eojeol, morphtags)
         else:
             raise ValueError('Check table format')
-
         count = int(row[-1])
         return (key, count)
 
     with open(path, encoding='utf-8') as f:
         rows = [row.strip() for row in f]
     rows = [row.split(sep) for row in rows if row]
-    rows = [cast(row) for row in rows]
-    return rows
+    rows_ = []
+    for row in rows:
+        try:
+            rows_.append(cast(row))
+        except Exception as e:
+            print('Exception while casting row = {}'.format(row))
+            raise ValueError(e)
+    return rows_
