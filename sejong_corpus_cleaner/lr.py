@@ -490,13 +490,12 @@ def lr_form(eojeol, morphs, tags, simple_tags, i, debug=False,
                 tag_r = 'Josa'
 
     # ('이데올로기다.', [('이데올로기', 'NNG'), ('이', 'VCP'), ('다', 'EF')], False, False)
-    if (tags[i] == 'VCP' and morphs[i] == '이') and (surface_l[-1] == morphs[i+1][0]):
-        surface_l = surface_l[:-1]
-        surface_r = surface_l[-1] + surface_r
+    if (i > 0) and (tags[i] == 'VCP' and morphs[i] == '이') and (surface_l[-1] == morphs[i-1][-1]):
         tag_l = 'Noun'
         tag_r = 'Josa'
-
-    morph_l = lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, simple_tags, i, debug)
+        morph_l = surface_l
+    else:
+        morph_l = lemmatize_l(eojeol, surface_l, surface_r, morphs, tags, simple_tags, i, debug)
 
     if tag_l in {'Verb', 'Adjective', 'Noun', 'Pronoun', 'Numeral'}:
         morph_r = lemmatize_r(eojeol, surface_l, surface_r, morph_l, tag_l, tag_r, morphs, i, debug)
