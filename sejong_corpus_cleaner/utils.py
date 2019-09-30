@@ -202,6 +202,9 @@ def check_lr_transformation(eojeol, l, r, debug=False):
         >>>     print(test, check_lr_transformation(*test, debug=False))
     """
 
+    if (r is None) or (l[0] + r[0] == eojeol):
+        return True
+
     cho_l_canon, jung_l_canon, jong_l_canon = decompose(l[0][-1]) # 원형 L 마지막 음절의 초/중/종성
     # 원형 R 첫음절의 초/중/종성
     if (not r) or (not r[0]):
@@ -225,6 +228,9 @@ def check_lr_transformation(eojeol, l, r, debug=False):
         print('cho/jung/jong of L_canon = ({}, {}, {})'.format(cho_l_canon, jung_l_canon, jong_l_canon))
         print('cho/jung/jong of R_surf = ({}, {}, {})'.format(cho_r_surf, jung_r_surf, jong_r_surf))
         print('cho/jung/jong of R_canon = ({}, {}, {})'.format(cho_r_canon, jung_r_canon, jong_r_canon))
+
+    if len(l[0]) + len(r[0]) + 2 < len(eojeol):
+        return False
 
     # ('어제는', ('어제', 'Noun'), ('는', 'Josa'))
     # ('어제는', ('어제', 'Noun'), None)
