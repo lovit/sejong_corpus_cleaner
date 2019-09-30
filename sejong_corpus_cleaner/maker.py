@@ -148,6 +148,7 @@ def make_counter(sentences, eojeol_morpheme_pair=True, convert_lr=False,
         for eojeol, morphtags in sent:
             key = (eojeol, tuple(morphtags))
             counter[key] += 1
+    print('Found {} (eojeol, morphtags) pairs from Sejong corpus'.format(len(counter)))
 
     if convert_lr:
         num_exceptions = 0
