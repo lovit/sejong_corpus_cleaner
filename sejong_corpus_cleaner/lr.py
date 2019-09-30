@@ -5,6 +5,7 @@ from .simple_tag import to_simple_tag
 from .loader import MorphTag
 from .utils import is_jaum, is_moum, is_hangle, compose, decompose
 from .utils import check_lr_transformation
+from .utils import check_lemmatization
 
 
 def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=None, debug=False):
@@ -54,12 +55,12 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     # ('6.25', [('6', 'SN'), ('.', 'SF'), ('25', 'SN')], False, False),
     # ('6.25의', [('6', 'SN'), ('.', 'SF'), ('25', 'SN'), ('의', 'JKO')], False, False),
     l, r, b = transform_symbol_noun(eojeol, morphtags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     # ('IBM에서는', [('IBM', 'SL'), ('에서', 'JKB'), ('는', 'JX'), False, False])
     l, r, b = transform_foreign_noun(eojeol, morphtags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     eojeol, morphtags = preprocess1(eojeol, morphtags)
@@ -71,7 +72,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
         return [(eojeol, None, None, [], -1)]
 
     l, r, b = transform_with_rules0(eojeol, morphtags, debug=False)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     if (not noun_xsv_as_verb) and (xsv_as_root):
@@ -85,7 +86,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
             return [(eojeol_0, l_0, r_0, morphtags_0, b_0), (eojeol_1, l_1, r_1, morphtags_1, b_1)]
 
     l, r, b = transform_with_rules(eojeol, morphtags, rules=None, debug=debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     # prepare materials
@@ -94,7 +95,7 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     simple_tags = [to_simple_tag(tag) for tag in tags]
 
     l, r, b = transform_short_morphtag(eojeol, morphs, tags, simple_tags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     # 전성 어미가 존재할 경우.
@@ -102,14 +103,14 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     # noun_xsv_as_verb = False 이면 "시작/Noun + 한다/Verb" 로 변형한다.
     l, r, b = transform_when_noun_is_changed_to_predicator(
         eojeol, morphs, tags, simple_tags, noun_xsv_as_verb, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         # ('될텐데', [('되', 'VV'), ('ㄹ', 'ETM'), ('터', 'NNB'), ('이', 'VCP'), ('ㄴ데', 'EC')], False, False)
         if (xsv_as_root or noun_xsv_as_verb) and (l.tag == 'Noun') and (r.tag == 'Adjective' or r.tag == 'Verb'):
             r = MorphTag(r.morph, 'Josa')
         return [(eojeol, l, r, morphtags, b)]
 
     l, r, b = transform_normal_case(eojeol, morphs, tags, simple_tags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     # ('왜냐,', [('왜', 'MAG'), ('냐', 'EF'), (',', 'SP')], False, False),
@@ -118,11 +119,11 @@ def to_lr(eojeol, morphtags, noun_xsv_as_verb=False, xsv_as_root=False, rules=No
     # ('야라니?', [('야','IC'), ('라니','EF'), ('?','SF')], False, False),
     # ('여보셔요!"', [('여보','IC'), ('시','EP'), ('어요','EF'), ('!','SF'), ('"','SS')], False, False),
     l, r, b = transform_exceptional_case(eojeol, morphs, tags, simple_tags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     l, r, b = transform_only_eomi_josa(eojeol, morphtags, tags, simple_tags, debug)
-    if l is not None:
+    if l is not None and check_lemmatization(eojeol, l, r):
         return [(eojeol, l, r, morphtags, b)]
 
     message = 'Exception: Eojeol = {}, morphtags = {}'.format(eojeol_raw, morphtags_raw)
