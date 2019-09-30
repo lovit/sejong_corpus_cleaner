@@ -248,8 +248,8 @@ def make_lr_corpus(sentences, noun_xsv_as_verb=False, xsv_as_root=False, filepat
             num_exceptions += 1
             continue
 
-    args = (num_exceptions, num_sents)
-    print('Transform Sejong corpus to L-R format with {} exceptions from {} sents'.format(*args))
+    args = (num_sents, num_sents - num_exceptions, num_exceptions)
+    print('Transform {} - {} sents from Sejong corpus to L-R format with {} exceptions'.format(*args))
 
     if f is not None:
         print('L-R format corpus is sccessfully written at {}'.format(filepath))
